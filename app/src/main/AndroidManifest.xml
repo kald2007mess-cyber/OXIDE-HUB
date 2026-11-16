@@ -6,8 +6,8 @@
         android:allowBackup="false"
         android:usesCleartextTraffic="false"
         android:label="OXIDE HUB"
-        android:icon="@drawable/ic_launcher"
-        android:roundIcon="@drawable/ic_launcher"
+        android:icon="@drawable/oxide_hub"
+        android:roundIcon="@drawable/oxide_hub"
         android:theme="@android:style/Theme.Material.NoActionBar"
         android:hardwareAccelerated="true">
         <activity
