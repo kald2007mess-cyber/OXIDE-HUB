@@ -3,7 +3,7 @@ name: Build OXIDE HUB Native APK
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches: [ main, native-app-parity ]
     paths:
       - 'app/**'
       - '*.gradle.kts'
@@ -12,7 +12,7 @@ on:
       - '.github/workflows/android.yml'
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   build:
@@ -20,36 +20,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
-
       - name: Set up Gradle 8.9
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
-
       - name: Build native debug APK
         run: gradle --no-daemon assembleDebug
-
-      # Keep the Actions artifact for build inspection, and also publish the
-      # actual .apk as a direct downloadable GitHub Release asset.
       - name: Upload APK build artifact
         uses: actions/upload-artifact@v4
         with:
           name: OXIDE-HUB-native-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
-
-      - name: Publish direct APK download
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: oxide-build-${{ github.run_number }}
-          name: OXIDE HUB Android APK - Build ${{ github.run_number }}
-          files: app/build/outputs/apk/debug/app-debug.apk
-          draft: false
-          prerelease: false
-          make_latest: true
