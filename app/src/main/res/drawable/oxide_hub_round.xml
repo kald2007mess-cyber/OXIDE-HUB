@@ -7,10 +7,10 @@
         </shape>
     </item>
     <item
-        android:left="18%"
-        android:top="18%"
-        android:right="18%"
-        android:bottom="18%">
+        android:left="18dp"
+        android:top="18dp"
+        android:right="18dp"
+        android:bottom="18dp">
         <bitmap
             android:src="@drawable/oxide_hub"
             android:gravity="center"
