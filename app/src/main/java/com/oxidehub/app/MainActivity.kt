@@ -36,10 +36,7 @@ class MainActivity : ComponentActivity() {
         window.statusBarColor = android.graphics.Color.rgb(4, 14, 30)
         window.navigationBarColor = android.graphics.Color.rgb(4, 14, 30)
 
-        CookieManager.getInstance().apply {
-            setAcceptCookie(true)
-            setAcceptThirdPartyCookies(createWebViewForCookieSetup(), true)
-        }
+        CookieManager.getInstance().setAcceptCookie(true)
 
         webView = WebView(this)
         webView.setBackgroundColor(android.graphics.Color.rgb(4, 14, 30))
@@ -110,9 +107,10 @@ class MainActivity : ComponentActivity() {
                         return true
                     }
                 }
-                val transport = resultMsg?.obj as? WebView.WebViewTransport ?: return false
+                val message = resultMsg ?: return false
+                val transport = message.obj as? WebView.WebViewTransport ?: return false
                 transport.webView = popup
-                resultMsg.sendToTarget()
+                message.sendToTarget()
                 return true
             }
         }
@@ -153,8 +151,6 @@ class MainActivity : ComponentActivity() {
             }
         })
     }
-
-    private fun createWebViewForCookieSetup(): WebView = WebView(this)
 
     override fun onSaveInstanceState(outState: Bundle) {
         webView.saveState(outState)
