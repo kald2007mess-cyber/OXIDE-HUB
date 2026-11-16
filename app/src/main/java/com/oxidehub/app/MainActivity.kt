@@ -4,6 +4,8 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -96,6 +98,8 @@ private fun OxideNativeApp(api: OxideApi) {
     var uuidDraft by remember { mutableStateOf("") }
     var linkCode by remember { mutableStateOf("") }
     var commentDraft by remember { mutableStateOf("") }
+    var selectedMissionId by remember { mutableStateOf(0) }
+    var proofUploading by remember { mutableStateOf(false) }
 
     fun refreshProfile() {
         scope.launch {
@@ -110,6 +114,29 @@ private fun OxideNativeApp(api: OxideApi) {
                 error = e.localizedMessage ?: "تعذر الاتصال بالخادم"
             } finally {
                 loading = false
+            }
+        }
+    }
+
+    val proofPicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        if (uri != null && selectedMissionId > 0) {
+            scope.launch {
+                proofUploading = true
+                sectionError = null
+                actionMessage = null
+                try {
+                    val result = api.submitMissionProof(selectedMissionId, uri)
+                    if (result.optBoolean("success", false)) {
+                        actionMessage = "تم إرسال إثبات المهمة للمراجعة"
+                        reloadKey++
+                    } else {
+                        sectionError = result.optString("error", "تعذر إرسال الإثبات")
+                    }
+                } catch (e: Exception) {
+                    sectionError = e.localizedMessage ?: "تعذر رفع الصورة"
+                } finally {
+                    proofUploading = false
+                }
             }
         }
     }
@@ -281,11 +308,15 @@ private fun OxideNativeApp(api: OxideApi) {
                                 item = item,
                                 onOpen = { url ->
                                     try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) } catch (_: Exception) {}
+                                },
+                                onPickProof = {
+                                    selectedMissionId = item.optInt("id")
+                                    proofPicker.launch("image/*")
                                 }
                             )
                         }
                     }
-                    FeatureCard("إرسال إثبات", "واجهة إرسال الصورة لم تُفعّل بعد؛ لن نعرض زر إرسال وهمياً قبل إضافة منتقي الصور ورفع multipart الآمن.")
+                    if (proofUploading) CircularProgressIndicator(modifier = Modifier.size(22.dp), color = Cyan, strokeWidth = 2.dp)
                 }
                 2 -> {
                     Text("المكافآت", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
@@ -398,7 +429,7 @@ private fun OxideNativeApp(api: OxideApi) {
 }
 
 @Composable
-private fun MissionCard(item: JSONObject, onOpen: (String) -> Unit) {
+private fun MissionCard(item: JSONObject, onOpen: (String) -> Unit, onPickProof: () -> Unit) {
     val status = item.optString("status", "not_submitted")
     val statusText = when (status) {
         "approved" -> "مكتملة"
@@ -416,6 +447,11 @@ private fun MissionCard(item: JSONObject, onOpen: (String) -> Unit) {
             val target = item.optString("targetUrl")
             if (target.startsWith("https://") || target.startsWith("http://")) {
                 TextButton(onClick = { onOpen(target) }) { Text("فتح رابط المهمة") }
+            }
+            if (status != "approved" && status != "pending") {
+                Button(onClick = onPickProof, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF087F9B))) {
+                    Text(if (status == "rejected") "إعادة إرسال الإثبات" else "اختيار صورة الإثبات")
+                }
             }
         }
     }
