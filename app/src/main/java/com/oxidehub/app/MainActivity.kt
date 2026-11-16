@@ -36,6 +36,7 @@ class MainActivity : ComponentActivity() {
                 modifier = Modifier.fillMaxSize(),
                 factory = { context ->
                     WebView(context).apply {
+                        setBackgroundColor(android.graphics.Color.rgb(3, 8, 22))
                         oxideWebView = this
                         settings.javaScriptEnabled = true
                         settings.domStorageEnabled = true
