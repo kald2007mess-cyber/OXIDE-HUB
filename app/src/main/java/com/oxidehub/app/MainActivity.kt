@@ -229,7 +229,7 @@ private fun OxideHubApp(api: OxideApi) {
                             items(offers) { offer ->
                                 InfoCard {
                                     Text(offer.second.first, color = Color.White, fontWeight = FontWeight.Bold)
-                                    Text("\${offer.second.second} POINTS", color = Cyan)
+                                    Text(offer.second.second.toString() + " POINTS", color = Cyan)
                                     Button(
                                         onClick = { selectedOffer = offer; actionMessage = "" },
                                         enabled = points >= offer.second.second,
@@ -286,7 +286,7 @@ private fun OxideHubApp(api: OxideApi) {
                                 items(news) { post ->
                                     InfoCard {
                                         Text(post.first, color = Color.White, fontWeight = FontWeight.Bold)
-                                        if (post.second.isNotBlank()) Text("نوع المنشور: \${post.second}", color = Muted, fontSize = 11.sp)
+                                        if (post.second.isNotBlank()) Text("نوع المنشور: " + post.second, color = Muted, fontSize = 11.sp)
                                     }
                                 }
                             }
@@ -311,7 +311,7 @@ private fun OxideHubApp(api: OxideApi) {
         AlertDialog(
             onDismissRequest = { selectedOffer = null },
             title = { Text("تأكيد الاستبدال") },
-            text = { Text("سيتم إرسال طلب \${offer.second.first} مقابل \${offer.second.second} نقطة باستخدام حسابك الحالي ($displayId).") },
+            text = { Text("سيتم إرسال طلب " + offer.second.first + " مقابل " + offer.second.second + " نقطة باستخدام حسابك الحالي (" + displayId + ").") },
             confirmButton = {
                 TextButton(onClick = {
                     val current = offer
