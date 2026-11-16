@@ -163,8 +163,8 @@ private fun OxideApp(
             Spacer(Modifier.height(18.dp))
             listOf("المهام", "الإحالات", "السحب", "الملف الشخصي").forEach { item ->
                 Card(
-                    Modifier.fillMaxWidth().padding(vertical = 4.dp),
                     onClick = { selected = item },
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = if (selected == item) Color(0xFF302044) else Panel
                     ),
