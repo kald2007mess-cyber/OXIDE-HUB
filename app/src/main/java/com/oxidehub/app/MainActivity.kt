@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -74,6 +76,9 @@ private fun OxideNativeApp(api: OxideApi) {
     var loading by remember { mutableStateOf(true) }
     var profile by remember { mutableStateOf<JSONObject?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
+    var remoteData by remember { mutableStateOf<JSONObject?>(null) }
+    var sectionLoading by remember { mutableStateOf(false) }
+    var sectionError by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
 
     fun refresh() {
@@ -95,6 +100,30 @@ private fun OxideNativeApp(api: OxideApi) {
     }
 
     LaunchedEffect(Unit) { refresh() }
+    LaunchedEffect(selected) {
+        val endpoint = when (selected) {
+            1 -> "/api/missions/status"
+            2 -> "/api/rewards"
+            3 -> "/api/referral"
+            4 -> "/api/news"
+            5 -> "/api/support/messages?after=0"
+            else -> null
+        }
+        if (endpoint != null) {
+            sectionLoading = true
+            sectionError = null
+            try {
+                remoteData = api.get(endpoint)
+                if (remoteData?.optBoolean("success", true) == false) {
+                    sectionError = remoteData?.optString("error", "تعذر تحميل البيانات")
+                }
+            } catch (e: Exception) {
+                sectionError = e.localizedMessage ?: "تعذر الاتصال بالخادم"
+            } finally {
+                sectionLoading = false
+            }
+        }
+    }
 
     Scaffold(
         containerColor = Space,
@@ -116,7 +145,7 @@ private fun OxideNativeApp(api: OxideApi) {
                 .fillMaxSize()
                 .background(Brush.verticalGradient(listOf(Color(0xFF0B2039), Space, Color(0xFF030B15))))
                 .padding(padding)
-                .padding(horizontal = 18.dp, vertical = 16.dp),
+                .verticalScroll(rememberScrollState())\n                .padding(horizontal = 18.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
@@ -169,7 +198,14 @@ private fun OxideNativeApp(api: OxideApi) {
                     if (selected == 2) FeatureCard("المكافآت", "سيتم جلب الرصيد والطلبات من قاعدة البيانات بعد توصيل API المكافآت.")
                     if (selected == 3) FeatureCard("الإحالات", "سيتم ربط رابط الإحالة وإحصاء الدعوات بالخادم.")
                     if (selected == 4) FeatureCard("الأخبار", "سيتم جلب الأخبار والتعليقات والتفاعلات من الخادم.")
-                    if (selected == 5) FeatureCard("الدعم", "سيتم تفعيل المحادثات وإرسال الرسائل بعد توصيل API الدعم.")
+                    if (sectionLoading) CircularProgressIndicator(modifier = Modifier.size(22.dp), color = Cyan, strokeWidth = 2.dp)
+                    sectionError?.let { FeatureCard("تعذر تحميل القسم", it) }
+                    remoteData?.let { data ->
+                        FeatureCard("بيانات من الخادم", data.toString(2))
+                    }
+                    if (selected == 1) FeatureCard("إرسال الإثبات", "رفع صور إثبات المهمة يحتاج إضافة رفع ملفات آمن قبل تفعيله.")
+                    if (selected == 2) FeatureCard("طلبات الاستبدال", "سيتم تفعيل إرسال طلب الاستبدال بعد إكمال التحقق من UUID وربط إجراء الطلب.")
+                    if (selected == 5) FeatureCard("إرسال رسالة", "المحادثة تُحمّل حالياً؛ إرسال الرسائل والوسائط يحتاج ربط واجهة الإرسال الأصلية.")
                 }
             }
             Spacer(Modifier.height(4.dp))
