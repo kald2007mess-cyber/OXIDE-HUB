@@ -5,7 +5,7 @@ compatibility_date = "2026-11-16"
 [[d1_databases]]
 binding = "DB"
 database_name = "oxide-hub-data"
-database_id = "REPLACE_WITH_NEW_D1_DATABASE_ID"
+database_id = "95fb03c7-3cd5-447e-b17f-21812e68b890"
 migrations_dir = "database/migrations"
 
 # Set secrets with Wrangler, never commit secret values:
