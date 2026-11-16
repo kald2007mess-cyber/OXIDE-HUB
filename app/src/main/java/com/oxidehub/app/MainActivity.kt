@@ -146,7 +146,8 @@ private fun OxideNativeApp(api: OxideApi) {
                 .fillMaxSize()
                 .background(Brush.verticalGradient(listOf(Color(0xFF0B2039), Space, Color(0xFF030B15))))
                 .padding(padding)
-                .verticalScroll(rememberScrollState())\n                .padding(horizontal = 18.dp, vertical = 16.dp),
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 18.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
