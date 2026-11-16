@@ -14,6 +14,7 @@ import java.util.UUID
  * The server remains the authority for identity, balances and rewards.
  */
 class OxideApi(context: Context) {
+    private val appContext = context.applicationContext
     private val preferences = context.getSharedPreferences("oxide_session", Context.MODE_PRIVATE)
 
     suspend fun initialize(): JSONObject = request("/api/me", "GET", null)
