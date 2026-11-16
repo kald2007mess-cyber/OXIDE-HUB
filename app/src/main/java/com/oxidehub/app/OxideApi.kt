@@ -17,6 +17,8 @@ class OxideApi(context: Context) {
     suspend fun initialize(): JSONObject = request("/api/me", "GET", null)
     suspend fun get(path: String): JSONObject = request(path, "GET", null)
     suspend fun post(path: String, body: JSONObject): JSONObject = request(path, "POST", body.toString())
+    suspend fun linkNativeAccount(code: String): JSONObject =
+        request("/api/native-link", "POST", JSONObject().put("code", code).toString())
 
     private suspend fun request(path: String, method: String, body: String?): JSONObject =
         withContext(Dispatchers.IO) {
