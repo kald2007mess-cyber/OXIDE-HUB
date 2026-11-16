@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="#09051F" />
+            <stroke android:width="2dp" android:color="#8B35FF" />
+        </shape>
+    </item>
+    <item
+        android:left="20dp"
+        android:top="20dp"
+        android:right="20dp"
+        android:bottom="20dp">
+        <bitmap
+            android:src="@drawable/oxide_hub"
+            android:gravity="center"
+            android:filter="true" />
+    </item>
+</layer-list>
