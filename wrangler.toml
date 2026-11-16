@@ -1,0 +1,14 @@
+name = "oxide-hub-api"
+main = "src/index.js"
+compatibility_date = "2026-11-16"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "oxide-hub-data"
+database_id = "REPLACE_WITH_NEW_D1_DATABASE_ID"
+migrations_dir = "database/migrations"
+
+# Set secrets with Wrangler, never commit secret values:
+# npx wrangler secret put LEGACY_MIGRATION_SECRET
+# npx wrangler secret put TELEGRAM_BOT_TOKEN
+# npx wrangler secret put TELEGRAM_ADMIN_ID
