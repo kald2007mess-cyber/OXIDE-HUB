@@ -8,23 +8,26 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 /**
- * Uses the server-issued visitor identity. The signed cookie is retained in
- * this app's private storage; user IDs and balances are never generated locally.
+ * Native Android client for the OXIDE HUB production API.
+ * The server remains the authority for identity, balances and rewards.
  */
 class OxideApi(context: Context) {
     private val preferences = context.getSharedPreferences("oxide_session", Context.MODE_PRIVATE)
 
+    suspend fun initialize(): JSONObject = request("/api/me", "GET", null)
     suspend fun get(path: String): JSONObject = request(path, "GET", null)
     suspend fun post(path: String, body: JSONObject): JSONObject = request(path, "POST", body.toString())
 
     private suspend fun request(path: String, method: String, body: String?): JSONObject =
         withContext(Dispatchers.IO) {
+            require(path.startsWith("/") && !path.startsWith("//")) { "Invalid API path" }
             val connection = (URL(BASE_URL + path).openConnection() as HttpURLConnection).apply {
                 requestMethod = method
                 connectTimeout = 15000
                 readTimeout = 20000
                 useCaches = false
                 setRequestProperty("Accept", "application/json")
+                setRequestProperty("Cache-Control", "no-store")
                 preferences.getString("visitor_cookie", null)?.let {
                     setRequestProperty("Cookie", it)
                 }
@@ -45,8 +48,10 @@ class OxideApi(context: Context) {
                 }
                 val code = connection.responseCode
                 val stream = if (code in 200..299) connection.inputStream else connection.errorStream
-                val text = stream?.bufferedReader(Charsets.UTF_8)?.use { it.readText() }.orEmpty()
-                val json = try { JSONObject(text) } catch (_: Exception) {
+                val responseText = stream?.bufferedReader(Charsets.UTF_8)?.use { it.readText() }.orEmpty()
+                val json = try {
+                    JSONObject(responseText)
+                } catch (_: Exception) {
                     JSONObject().put("success", false).put("error", "INVALID_SERVER_RESPONSE")
                 }
                 if (code !in 200..299 && !json.has("error")) json.put("error", "HTTP_$code")
@@ -57,6 +62,6 @@ class OxideApi(context: Context) {
         }
 
     companion object {
-        const val BASE_URL = "https://oxide-hub-pages.pages.dev"
+        const val BASE_URL = "https://kald2007mess-cyber-github-io.pages.dev"
     }
 }
