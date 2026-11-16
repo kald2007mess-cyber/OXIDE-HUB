@@ -5,7 +5,7 @@
         android:allowBackup="false"
         android:usesCleartextTraffic="false"
         android:label="OXIDE HUB"
-        android:icon="@drawable/oxide_hub"
+        android:icon="@drawable/oxide_hub_round"
         android:theme="@android:style/Theme.Material.Light.NoActionBar"
         android:supportsRtl="true">
         <activity
