@@ -32,3 +32,11 @@ This repository now contains the first native Android application shell. It is b
 
 ## Build
 GitHub Actions builds a debug APK on pushes to main. A distributable release APK requires a private signing key stored as GitHub Actions secrets; never commit the key.
+
+
+## Database foundation (phase 2)
+- `database/migrations/0001_initial.sql` defines the new independent SQLite/D1 schema.
+- It is additive and contains no destructive reset commands.
+- The legacy database has not been changed or copied.
+- Before importing accounts, export the legacy `visitors` and related tables, derive each existing `OX-XXXXXXXX` ID exactly as the old code does, and check for collisions. Only then populate `identity_migrations` and `users`.
+- A legacy cookie is signed using the old `SESSION_SECRET`; do not expose or embed this secret in the Android client. A secure account-claim/migration process must be implemented server-side before retiring the old service.
