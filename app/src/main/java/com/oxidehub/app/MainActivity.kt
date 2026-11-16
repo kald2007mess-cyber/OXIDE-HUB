@@ -94,6 +94,7 @@ private fun OxideNativeApp(api: OxideApi) {
     var reloadKey by remember { mutableStateOf(0) }
     var supportDraft by remember { mutableStateOf("") }
     var uuidDraft by remember { mutableStateOf("") }
+    var linkCode by remember { mutableStateOf("") }
     var commentDraft by remember { mutableStateOf("") }
 
     fun refreshProfile() {
@@ -137,6 +138,29 @@ private fun OxideNativeApp(api: OxideApi) {
                 sectionError = e.localizedMessage ?: "تعذر الاتصال بالخادم"
             } finally {
                 sectionLoading = false
+            }
+        }
+    }
+
+    fun linkNativeAccount() {
+        scope.launch {
+            loading = true
+            error = null
+            actionMessage = null
+            try {
+                val result = api.linkNativeAccount(linkCode.trim())
+                if (result.optBoolean("success", false) && result.optBoolean("linked", false)) {
+                    actionMessage = "تم ربط التطبيق بحساب الموقع: " + result.optString("displayId")
+                    linkCode = ""
+                    profile = api.initialize()
+                    reloadKey++
+                } else {
+                    error = result.optString("error", "تعذر ربط الحساب")
+                }
+            } catch (e: Exception) {
+                error = e.localizedMessage ?: "تعذر ربط الحساب"
+            } finally {
+                loading = false
             }
         }
     }
@@ -220,7 +244,29 @@ private fun OxideNativeApp(api: OxideApi) {
                         }
                     }
                     FeatureCard("ابدأ رحلتك", "اختر أحد الأقسام من الشريط السفلي للوصول إلى خدمات OXIDE HUB.")
-                    FeatureCard("ملاحظة الحساب", "هذه الجلسة تُنشأ من الخادم. ربطها بحساب متصفح سابق يحتاج خطوة ربط آمنة منفصلة.")
+                    Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(20.dp)) {
+                        Column(Modifier.fillMaxWidth().padding(17.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
+                            Text("ربط حساب الموقع", color = Cyan, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                            Text("افتح الرابط في المتصفح الذي تستخدم فيه حساب OXIDE HUB، انسخ رمز الربط ثم الصقه هنا. الرمز صالح لمدة 5 دقائق ويُستخدم مرة واحدة.", color = Muted, fontSize = 12.sp)
+                            OutlinedField(value = linkCode, onValueChange = { linkCode = it }, label = "رمز الربط المكوّن من 32 حرفاً")
+                            Button(
+                                onClick = {
+                                    try {
+                                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(OxideApi.BASE_URL + "/api/native-link")))
+                                    } catch (_: Exception) {
+                                        error = "تعذر فتح المتصفح"
+                                    }
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF15506B))
+                            ) { Text("فتح صفحة إنشاء الرمز") }
+                            Button(
+                                onClick = { if (linkCode.isBlank()) error = "أدخل رمز الربط أولاً" else linkNativeAccount() },
+                                enabled = !loading && linkCode.trim().length == 32,
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF087F9B))
+                            ) { Text("ربط الحساب الآن") }
+                            error?.let { Text(it, color = Color(0xFFFF9A9A), fontSize = 12.sp) }
+                        }
+                    }
                 }
                 1 -> {
                     Text("المهام", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
