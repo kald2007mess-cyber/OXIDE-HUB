@@ -124,6 +124,7 @@ private fun OxideNativeApp(api: OxideApi) {
     var referralDraft by remember { mutableStateOf("") }
     var orderData by remember { mutableStateOf<JSONObject?>(null) }
     var islandData by remember { mutableStateOf<JSONObject?>(null) }
+    var progressData by remember { mutableStateOf<JSONObject?>(null) }
     var settingsExpanded by remember { mutableStateOf(false) }
     var currentLanguage by remember { mutableStateOf("ar") }
     var islandTab by remember { mutableStateOf(0) }
@@ -185,6 +186,12 @@ private fun OxideNativeApp(api: OxideApi) {
     }
 
     LaunchedEffect(selected, reloadKey) {
+        if (selected == 0) {
+            try {
+                progressData = api.get("/api/progress")
+                profile = api.initialize()
+            } catch (e: Exception) { error = e.localizedMessage ?: "تعذر تحميل التقدم" }
+        }
         val endpoint = when (selected) {
             1 -> "/api/rewards"
             3 -> "/api/referral"
@@ -390,6 +397,39 @@ private fun OxideNativeApp(api: OxideApi) {
 
             when (selected) {
                 0 -> {
+                    val progress = (progressData?.optInt("progress", 0) ?: 0).coerceIn(0, 3)
+                    Card(colors = CardDefaults.cardColors(containerColor = Color(0xD90C1930)), shape = RoundedCornerShape(14.dp)) {
+                        Column(Modifier.fillMaxWidth().padding(15.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                                Column {
+                                    Text("DOWNLOAD ACCESS", color = Muted, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                                    Text("التقدم:", color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                                }
+                                Text("$progress/3", color = Cyan, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold)
+                            }
+                            androidx.compose.material3.LinearProgressIndicator(
+                                progress = { progress / 3f }, modifier = Modifier.fillMaxWidth(),
+                                color = Cyan, trackColor = Color(0xFF244765)
+                            )
+                        }
+                    }
+                    Text("UNLOCK YOUR DOWNLOAD", color = Cyan, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    for (stage in 1..3) {
+                        Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(13.dp)) {
+                            Row(Modifier.fillMaxWidth().padding(15.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                                Text("المرحلة $stage/3", color = Color.White, fontWeight = FontWeight.Bold)
+                                Text("🔒 SOON", color = Muted, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                    Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(14.dp)) {
+                        Column(Modifier.fillMaxWidth().padding(14.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
+                            Text("منصات التحميل", color = Cyan, fontWeight = FontWeight.Bold)
+                            Button(onClick = { try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(OxideApi.BASE_URL + "/download.html"))) } catch (_: Exception) { error = "تعذر فتح صفحة Android" } }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF087F9B))) { Text("🤖 تحميل ANDROID") }
+                            Button(onClick = { try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(OxideApi.BASE_URL + "/ios.html"))) } catch (_: Exception) { error = "تعذر فتح صفحة iOS" } }, modifier = Modifier.fillMaxWidth(), enabled = false, colors = ButtonDefaults.buttonColors(disabledContainerColor = Color(0xFF244765))) { Text(" تحميل iOS — SOON") }
+                            Button(onClick = { try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(OxideApi.BASE_URL + "/beta.html"))) } catch (_: Exception) { error = "تعذر فتح صفحة Beta" } }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF15506B))) { Text("🧪 BETA") }
+                        }
+                    }
                     Text("مرحباً بك في OXIDE HUB", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                     Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(22.dp)) {
                         Column(Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
