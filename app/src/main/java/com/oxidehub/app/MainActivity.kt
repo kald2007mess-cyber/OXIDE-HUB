@@ -386,9 +386,9 @@ private fun OxideNativeApp(api: OxideApi) {
                 Box {
                     TextButton(onClick = { settingsExpanded = true }) { Text("⚙️", color = Cyan, fontSize = 17.sp) }
                     DropdownMenu(expanded = settingsExpanded, onDismissRequest = { settingsExpanded = false }) {
-                        DropdownMenuItem(text = { Text(oxideText("ربط حساب Google Play", language)) }, onClick = {
+                        DropdownMenuItem(text = { Text(oxideText(oxideText("ربط حساب Google Play", language), language)) }, onClick = {
                             settingsExpanded = false
-                            actionMessage = oxideText("ربط Google Play Games سيتاح بعد دمج الخدمة في تطبيق Android.", language)
+                            actionMessage = oxideText(oxideText("ربط Google Play Games سيتاح بعد دمج الخدمة في تطبيق Android.", language), language)
                         })
                     }
                 }
@@ -412,9 +412,9 @@ private fun OxideNativeApp(api: OxideApi) {
                             clipboard.setPrimaryClip(android.content.ClipData.newPlainText("OXIDE ID", id))
                             actionMessage = "تم نسخ رقم المستخدم"
                         }
-                    }) { Text("نسخ", color = Cyan, fontSize = 11.sp) }
+                    }) { Text(oxideText("نسخ", language), color = Cyan, fontSize = 11.sp) }
                     Text(profile?.optString("displayId", profile?.optString("userId", "Loading...")) ?: "Loading...", color = Color.White, fontSize = 12.sp, modifier = Modifier.weight(1f))
-                    Text("رقم المستخدم الخاص بك", color = Muted, fontSize = 10.sp)
+                    Text(oxideText("رقم المستخدم الخاص بك", language), color = Muted, fontSize = 10.sp)
                 }
             }
 
@@ -462,7 +462,7 @@ private fun OxideNativeApp(api: OxideApi) {
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                                 Column {
                                     Text("DOWNLOAD ACCESS", color = Muted, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                                    Text("التقدم:", color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                                    Text(oxideText("التقدم:", language), color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold)
                                 }
                                 Text("$progress/3", color = Cyan, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold)
                             }
@@ -476,23 +476,23 @@ private fun OxideNativeApp(api: OxideApi) {
                     for (stage in 1..3) {
                         Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(13.dp)) {
                             Row(Modifier.fillMaxWidth().padding(15.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                                Text("المرحلة $stage/3", color = Color.White, fontWeight = FontWeight.Bold)
+                                Text(oxideText("المرحلة $stage/3", language), color = Color.White, fontWeight = FontWeight.Bold)
                                 Text("🔒 SOON", color = Muted, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
                     Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(14.dp)) {
                         Column(Modifier.fillMaxWidth().padding(14.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
-                            Text("منصات التحميل", color = Cyan, fontWeight = FontWeight.Bold)
-                            Button(onClick = { try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(OxideApi.BASE_URL + "/download.html"))) } catch (_: Exception) { error = "تعذر فتح صفحة Android" } }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF087F9B))) { Text("🤖 تحميل ANDROID") }
-                            Button(onClick = { try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(OxideApi.BASE_URL + "/ios.html"))) } catch (_: Exception) { error = "تعذر فتح صفحة iOS" } }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF15506B))) { Text(" تحميل iOS") }
+                            Text(oxideText("منصات التحميل", language), color = Cyan, fontWeight = FontWeight.Bold)
+                            Button(onClick = { try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(OxideApi.BASE_URL + "/download.html"))) } catch (_: Exception) { error = "تعذر فتح صفحة Android" } }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF087F9B))) { Text(oxideText("🤖 تحميل ANDROID", language)) }
+                            Button(onClick = { try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(OxideApi.BASE_URL + "/ios.html"))) } catch (_: Exception) { error = "تعذر فتح صفحة iOS" } }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF15506B))) { Text(oxideText(" تحميل iOS", language)) }
                             Button(onClick = { try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(OxideApi.BASE_URL + "/beta.html"))) } catch (_: Exception) { error = "تعذر فتح صفحة Beta" } }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF15506B))) { Text("🧪 BETA") }
                         }
                     }
                     Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(14.dp)) {
                         Column(Modifier.fillMaxWidth().padding(15.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                            Text("طريقة الاستخدام", color = Cyan, fontSize = 17.sp, fontWeight = FontWeight.Bold)
-                            Text("أربع خطوات بسيطة للوصول إلى التحميل", color = Muted, fontSize = 11.sp)
+                            Text(oxideText("طريقة الاستخدام", language), color = Cyan, fontSize = 17.sp, fontWeight = FontWeight.Bold)
+                            Text(oxideText("أربع خطوات بسيطة للوصول إلى التحميل", language), color = Muted, fontSize = 11.sp)
                             listOf(
                                 "افتح OXIDE HUB وادخل إلى الصفحة الرئيسية.",
                                 "شاهد الإعلانات الثلاثة وأكمل كل إعلان حتى تأكيده.",
@@ -508,32 +508,32 @@ private fun OxideNativeApp(api: OxideApi) {
                             }
                         }
                     }
-                    Text("مرحباً بك في OXIDE HUB", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Text(oxideText("مرحباً بك في OXIDE HUB", language), color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                     Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(22.dp)) {
                         Column(Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                            Text("رصيد نقاطك", color = Muted, fontSize = 13.sp)
+                            Text(oxideText("رصيد نقاطك", language), color = Muted, fontSize = 13.sp)
                             val points = profile?.opt("points")?.toString() ?: "—"
                             Text(points, color = Cyan, fontSize = 38.sp, fontWeight = FontWeight.ExtraBold)
-                            Text("الرصيد يُقرأ مباشرة من قاعدة بيانات الموقع", color = Muted, fontSize = 11.sp)
+                            Text(oxideText("الرصيد يُقرأ مباشرة من قاعدة بيانات الموقع", language), color = Muted, fontSize = 11.sp)
                         }
                     }
                     Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(22.dp)) {
                         Column(Modifier.fillMaxWidth().padding(18.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text("حالة الحساب", color = Color.White, fontWeight = FontWeight.Bold)
+                            Text(oxideText("حالة الحساب", language), color = Color.White, fontWeight = FontWeight.Bold)
                             Text(profile?.optString("displayId", "لم يتم تأكيد الحساب") ?: "جارٍ تحميل الحساب", color = Muted)
                             if (loading) CircularProgressIndicator(modifier = Modifier.size(22.dp), color = Cyan, strokeWidth = 2.dp)
                             error?.let { Text(it, color = Color(0xFFFF9A9A), fontSize = 12.sp) }
                             Button(onClick = { refreshProfile() }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF087F9B))) {
-                                Text("تحديث بيانات الحساب")
+                                Text(oxideText("تحديث بيانات الحساب", language))
                             }
                         }
                     }
                     FeatureCard("ابدأ رحلتك", "اختر أحد الأقسام من الشريط السفلي للوصول إلى خدمات OXIDE HUB.")
-                    Button(onClick = { try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(OxideApi.BASE_URL + "/download.html"))) } catch (_: Exception) { error = "تعذر فتح مركز التنزيلات" } }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF15506B))) { Text("فتح مركز التنزيلات الرسمي") }
+                    Button(onClick = { try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(OxideApi.BASE_URL + "/download.html"))) } catch (_: Exception) { error = "تعذر فتح مركز التنزيلات" } }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF15506B))) { Text(oxideText("فتح مركز التنزيلات الرسمي", language)) }
                     Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(20.dp)) {
                         Column(Modifier.fillMaxWidth().padding(17.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
-                            Text("ربط حساب الموقع", color = Cyan, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                            Text("افتح الرابط في المتصفح الذي تستخدم فيه حساب OXIDE HUB، انسخ رمز الربط ثم الصقه هنا. الرمز صالح لمدة 5 دقائق ويُستخدم مرة واحدة.", color = Muted, fontSize = 12.sp)
+                            Text(oxideText("ربط حساب الموقع", language), color = Cyan, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                            Text(oxideText("افتح الرابط في المتصفح الذي تستخدم فيه حساب OXIDE HUB، انسخ رمز الربط ثم الصقه هنا. الرمز صالح لمدة 5 دقائق ويُستخدم مرة واحدة.", language), color = Muted, fontSize = 12.sp)
                             OutlinedField(value = linkCode, onValueChange = { linkCode = it }, label = "رمز الربط المكوّن من 32 حرفاً")
                             Button(
                                 onClick = {
@@ -544,12 +544,12 @@ private fun OxideNativeApp(api: OxideApi) {
                                     }
                                 },
                                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF15506B))
-                            ) { Text("فتح صفحة إنشاء الرمز") }
+                            ) { Text(oxideText("فتح صفحة إنشاء الرمز", language)) }
                             Button(
                                 onClick = { if (linkCode.isBlank()) error = "أدخل رمز الربط أولاً" else linkNativeAccount() },
                                 enabled = !loading && linkCode.trim().length == 32,
                                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF087F9B))
-                            ) { Text("ربط الحساب الآن") }
+                            ) { Text(oxideText("ربط الحساب الآن", language)) }
                             error?.let { Text(it, color = Color(0xFFFF9A9A), fontSize = 12.sp) }
                         }
                     }
@@ -558,9 +558,9 @@ private fun OxideNativeApp(api: OxideApi) {
                     Text("🎁 OXIDE ISLAND", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
                     Card(colors = CardDefaults.cardColors(containerColor = Color(0xE6084170)), shape = RoundedCornerShape(15.dp)) {
                         Column(Modifier.fillMaxWidth().padding(18.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                            Text("رصيد النقاط", color = Muted, fontSize = 13.sp)
+                            Text(oxideText("رصيد النقاط", language), color = Muted, fontSize = 13.sp)
                             Text((remoteData?.optInt("points", 0) ?: profile?.optInt("points", 0) ?: 0).toString(), color = Cyan, fontSize = 34.sp, fontWeight = FontWeight.ExtraBold)
-                            Text("نقاطك المتاحة في OXIDE HUB", color = Muted, fontSize = 11.sp)
+                            Text(oxideText("نقاطك المتاحة في OXIDE HUB", language), color = Muted, fontSize = 11.sp)
                         }
                     }
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(9.dp)) {
@@ -580,7 +580,7 @@ private fun OxideNativeApp(api: OxideApi) {
                     if (islandTab == 0) {
                         Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(16.dp)) {
                             Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                                Text("تقدم إعلانات الجزيرة", color = Cyan, fontWeight = FontWeight.Bold)
+                                Text(oxideText("تقدم إعلانات الجزيرة", language), color = Cyan, fontWeight = FontWeight.Bold)
                                 val completedAds = islandData?.optInt("completedAds", 0) ?: 0
                                 val requiredAds = islandData?.optInt("requiredAds", 10) ?: 10
                                 Text("$completedAds / $requiredAds", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
@@ -590,16 +590,16 @@ private fun OxideNativeApp(api: OxideApi) {
                                     color = Cyan,
                                     trackColor = Color(0xFF244765)
                                 )
-                                Text("المكافأة: ${islandData?.optInt("pointsPerAd", 5) ?: 5} نقاط لكل إعلان", color = Muted, fontSize = 12.sp)
+                                Text(oxideText("المكافأة: ${islandData?.optInt(", language)pointsPerAd", 5) ?: 5} نقاط لكل إعلان", color = Muted, fontSize = 12.sp)
                                 val hours = islandRemainingSeconds / 3600
                                 val minutes = (islandRemainingSeconds % 3600) / 60
                                 val seconds = islandRemainingSeconds % 60
-                                Text("الوقت المتبقي للدورة: %02d:%02d:%02d".format(hours, minutes, seconds), color = Muted, fontSize = 12.sp)
-                                Button(onClick = { actionMessage = "🔒 SOON — مشاهدة الإعلانات غير متاحة حاليًا." }, enabled = false, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(disabledContainerColor = Color(0xFF244765))) { Text("🔒 مشاهدة الإعلانات — SOON") }
-                                Text("مشاهدة الإعلانات غير متاحة حاليًا، كما في الموقع الأصلي.", color = Muted, fontSize = 11.sp)
+                                Text(oxideText("الوقت المتبقي للدورة: %02d:%02d:%02d", language).format(hours, minutes, seconds), color = Muted, fontSize = 12.sp)
+                                Button(onClick = { actionMessage = "🔒 SOON — مشاهدة الإعلانات غير متاحة حاليًا." }, enabled = false, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(disabledContainerColor = Color(0xFF244765))) { Text(oxideText("🔒 مشاهدة الإعلانات — SOON", language)) }
+                                Text(oxideText("مشاهدة الإعلانات غير متاحة حاليًا، كما في الموقع الأصلي.", language), color = Muted, fontSize = 11.sp)
                             }
                         }
-                        Text("المكافآت المتاحة", color = Cyan, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                        Text(oxideText("المكافآت المتاحة", language), color = Cyan, fontWeight = FontWeight.Bold, fontSize = 18.sp)
                         val offers = remoteData?.optJSONArray("offers")
                         if (offers == null || offers.length() == 0) {
                             if (!sectionLoading) FeatureCard("لا توجد عروض", "تعذر تحميل عروض الاستبدال.")
@@ -612,20 +612,20 @@ private fun OxideNativeApp(api: OxideApi) {
                                     Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                         RewardImage(offerId)
                                         Text(offer.optString("name"), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 17.sp)
-                                        Text("$cost نقطة", color = Cyan)
+                                        Text(oxideText("$cost نقطة", language), color = Cyan)
                                         Button(onClick = {
                                             selectedOfferId = offerId
                                             selectedOfferName = offer.optString("name")
                                             selectedOfferCost = cost
                                             sectionError = null
-                                        }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF087F9B))) { Text("استبدال") }
+                                        }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF087F9B))) { Text(oxideText("استبدال", language)) }
                                     }
                                 }
                             }
                             if (selectedOfferId > 0) {
                                 Card(colors = CardDefaults.cardColors(containerColor = Color(0xFF0B1B30)), shape = RoundedCornerShape(12.dp)) {
                                     Column(Modifier.fillMaxWidth().padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                        Text("تأكيد استبدال $selectedOfferName مقابل $selectedOfferCost نقطة", color = Cyan, fontWeight = FontWeight.Bold)
+                                        Text(oxideText("تأكيد استبدال $selectedOfferName مقابل $selectedOfferCost نقطة", language), color = Cyan, fontWeight = FontWeight.Bold)
                                         OutlinedField(value = uuidDraft, onValueChange = { uuidDraft = it }, label = "OX-XXXXXXXX أو UUID كامل")
                                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                             Button(onClick = {
@@ -634,14 +634,14 @@ private fun OxideNativeApp(api: OxideApi) {
                                                     sendPost("/api/rewards", JSONObject().put("offerId", selectedOfferId).put("userUuid", uuidDraft.trim()), "تم تسجيل طلبك وإرساله للإدارة. الحالة: قيد المعالجة.")
                                                     selectedOfferId = 0
                                                 }
-                                            }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF087F9B))) { Text("تأكيد الطلب") }
-                                            TextButton(onClick = { selectedOfferId = 0 }) { Text("إلغاء", color = Muted) }
+                                            }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF087F9B))) { Text(oxideText("تأكيد الطلب", language)) }
+                                            TextButton(onClick = { selectedOfferId = 0 }) { Text(oxideText("إلغاء", language), color = Muted) }
                                         }
                                     }
                                 }
                             }
                         }
-                        Text("طلبات الاستبدال السابقة", color = Cyan, fontWeight = FontWeight.Bold)
+                        Text(oxideText("طلبات الاستبدال السابقة", language), color = Cyan, fontWeight = FontWeight.Bold)
                         val orders = orderData?.optJSONArray("orders")
                         if (orders == null || orders.length() == 0) FeatureCard("لا توجد طلبات سابقة", "ستظهر طلباتك هنا بعد تقديم أول طلب استبدال.")
                         else for (i in 0 until orders.length()) {
@@ -656,7 +656,7 @@ private fun OxideNativeApp(api: OxideApi) {
                             FeatureCard("#${order.optInt("id")} • ${order.optString("offer_name")}", "${order.optInt("points_cost")} نقطة — $status")
                         }
                     } else {
-                        Text("المهمات والعروض", color = Cyan, fontSize = 19.sp, fontWeight = FontWeight.Bold)
+                        Text(oxideText("المهمات والعروض", language), color = Cyan, fontSize = 19.sp, fontWeight = FontWeight.Bold)
                         val missions = remoteData?.optJSONArray("nativeMissions")
                         val missionTotal = missions?.length() ?: 0
                         var missionCompleted = 0
@@ -672,16 +672,16 @@ private fun OxideNativeApp(api: OxideApi) {
                                 }
                                 androidx.compose.material3.LinearProgressIndicator(progress = { missionPercent }, modifier = Modifier.fillMaxWidth(), color = Cyan, trackColor = Color(0xFF244765))
                                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                    Text("${(missionPercent * 100).toInt()}% مكتمل", color = Muted, fontSize = 11.sp)
-                                    Text("${(missionTotal - missionCompleted).coerceAtLeast(0)} مهمات متبقية", color = Muted, fontSize = 11.sp)
+                                    Text(oxideText("${(missionPercent * 100).toInt()}% مكتمل", language), color = Muted, fontSize = 11.sp)
+                                    Text(oxideText("${(missionTotal - missionCompleted).coerceAtLeast(0)} مهمات متبقية", language), color = Muted, fontSize = 11.sp)
                                 }
                                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                    Text("الرصيد: ${remoteData?.optInt("points", profile?.optInt("points", 0) ?: 0) ?: 0} نقطة", color = Cyan, fontSize = 11.sp)
-                                    Text("المهمات المكتملة", color = Muted, fontSize = 11.sp)
+                                    Text(oxideText("الرصيد: ${remoteData?.optInt(", language)points", profile?.optInt("points", 0) ?: 0) ?: 0} نقطة", color = Cyan, fontSize = 11.sp)
+                                    Text(oxideText("المهمات المكتملة", language), color = Muted, fontSize = 11.sp)
                                 }
                             }
                         }
-                        Text("المهمات المتاحة", color = Cyan, fontWeight = FontWeight.Bold)
+                        Text(oxideText("المهمات المتاحة", language), color = Cyan, fontWeight = FontWeight.Bold)
                         if (missions == null || missions.length() == 0) FeatureCard("لا توجد مهمات متاحة", "ستظهر المهمات هنا عند توفرها.")
                         else for (i in 0 until missions.length()) {
                             val item = missions.optJSONObject(i) ?: continue
@@ -700,15 +700,15 @@ private fun OxideNativeApp(api: OxideApi) {
                     FeatureCard("🔒 SOON", "اشتراك VIP سيكون متاحًا قريبًا.")
                 }
                 3 -> {
-                    Text("الإحالات والترتيب", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                    Text(oxideText("الإحالات والترتيب", language), color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
                     val user = remoteData?.optJSONObject("user")
                     Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(18.dp)) {
                         Column(Modifier.fillMaxWidth().padding(17.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text("ادعُ أصدقاءك واربح", color = Cyan, fontWeight = FontWeight.Bold, fontSize = 17.sp)
-                            Text("صديقك يحصل على 30 نقطة وأنت تحصل على 50 نقطة عند إدخال رمز دعوتك.", color = Muted, fontSize = 12.sp)
+                            Text(oxideText("ادعُ أصدقاءك واربح", language), color = Cyan, fontWeight = FontWeight.Bold, fontSize = 17.sp)
+                            Text(oxideText("صديقك يحصل على 30 نقطة وأنت تحصل على 50 نقطة عند إدخال رمز دعوتك.", language), color = Muted, fontSize = 12.sp)
                             val code = remoteData?.optString("referralCode", "") ?: ""
                             val inviteLink = if (code.isNotBlank()) OxideApi.BASE_URL + "/?ref=" + code else ""
-                            Text("رابط دعوتك", color = Muted, fontSize = 11.sp)
+                            Text(oxideText("رابط دعوتك", language), color = Muted, fontSize = 11.sp)
                             Text(if (inviteLink.isBlank()) "جارٍ تحميل الرابط..." else inviteLink, color = Color.White, fontSize = 11.sp)
                             Row(horizontalArrangement = Arrangement.spacedBy(7.dp)) {
                                 Button(onClick = {
@@ -717,7 +717,7 @@ private fun OxideNativeApp(api: OxideApi) {
                                         clipboard.setPrimaryClip(android.content.ClipData.newPlainText("OXIDE referral", inviteLink))
                                         actionMessage = "تم نسخ رابط الدعوة"
                                     }
-                                }, enabled = inviteLink.isNotBlank(), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF087F9B))) { Text("📋 نسخ الرابط") }
+                                }, enabled = inviteLink.isNotBlank(), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF087F9B))) { Text(oxideText("📋 نسخ الرابط", language)) }
                                 Button(onClick = {
                                     if (inviteLink.isNotBlank()) {
                                         val share = Intent(Intent.ACTION_SEND).apply {
@@ -727,28 +727,28 @@ private fun OxideNativeApp(api: OxideApi) {
                                         }
                                         try { context.startActivity(Intent.createChooser(share, "مشاركة رابط الدعوة")) } catch (_: Exception) { sectionError = "تعذرت مشاركة الرابط" }
                                     }
-                                }, enabled = inviteLink.isNotBlank(), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF15506B))) { Text("↗ مشاركة") }
+                                }, enabled = inviteLink.isNotBlank(), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF15506B))) { Text(oxideText("↗ مشاركة", language)) }
                             }
-                            Text("الأصدقاء المدعوون: ${user?.optInt("referrals", 0) ?: 0}", color = Color.White)
-                            Text("النقاط المكتسبة من الإحالات: ${user?.optInt("earned", 0) ?: 0}", color = Muted)
+                            Text(oxideText("الأصدقاء المدعوون: ${user?.optInt(", language)referrals", 0) ?: 0}", color = Color.White)
+                            Text(oxideText("النقاط المكتسبة من الإحالات: ${user?.optInt(", language)earned", 0) ?: 0}", color = Muted)
                         }
                     }
                     Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(18.dp)) {
                         Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text("إضافة إحالة", color = Cyan, fontWeight = FontWeight.Bold)
-                            Text("أدخل رمز الشخص الذي دعاك. لا يمكن إضافة إحالة بعد تسجيلها مرة واحدة.", color = Muted, fontSize = 12.sp)
+                            Text(oxideText("إضافة إحالة", language), color = Cyan, fontWeight = FontWeight.Bold)
+                            Text(oxideText("أدخل رمز الشخص الذي دعاك. لا يمكن إضافة إحالة بعد تسجيلها مرة واحدة.", language), color = Muted, fontSize = 12.sp)
                             OutlinedField(value = referralDraft, onValueChange = { referralDraft = it }, label = "رمز الإحالة OX-XXXXXXXX")
                             Button(onClick = {
                                 if (referralDraft.isBlank()) sectionError = "أدخل رمز الإحالة أولاً"
                                 else sendPost("/api/referral", JSONObject().put("referrerId", referralDraft.trim()), "تم تسجيل الإحالة بنجاح")
-                            }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF087F9B))) { Text("تأكيد رمز الإحالة") }
+                            }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF087F9B))) { Text(oxideText("تأكيد رمز الإحالة", language)) }
                         }
                     }
                     RankingList("أفضل أصحاب النقاط", remoteData?.optJSONArray("pointsRanking"), "points", "نقطة")
                     RankingList("أفضل المحيلين", remoteData?.optJSONArray("referralRanking"), "referrals", "إحالة")
                 }
                 4 -> {
-                    Text("الأخبار", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                    Text(oxideText("الأخبار", language), color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
                     val posts = remoteData?.optJSONArray("posts")
                     if (posts == null || posts.length() == 0) {
                         if (!sectionLoading) FeatureCard("لا توجد أخبار", "ستظهر منشورات الإدارة هنا عند توفرها.")
@@ -785,12 +785,12 @@ private fun OxideNativeApp(api: OxideApi) {
                     }
                 }
                 6 -> {
-                    TextButton(onClick = { selected = 0 }) { Text("⬅ إغلاق الإشعارات", color = Cyan) }
-                    Text("الإشعارات", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                    TextButton(onClick = { selected = 0 }) { Text(oxideText("⬅ إغلاق الإشعارات", language), color = Cyan) }
+                    Text(oxideText("الإشعارات", language), color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
                     val notifications = remoteData?.optJSONArray("notifications")
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Button(onClick = { sendPost("/api/notifications", JSONObject().put("action", "read_all"), "تم تحديد الإشعارات كمقروءة") }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF15506B))) { Text("قراءة الكل") }
-                        Button(onClick = { sendPost("/api/notifications", JSONObject().put("action", "delete_read"), "تم حذف الإشعارات المقروءة") }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF15506B))) { Text("حذف المقروءة") }
+                        Button(onClick = { sendPost("/api/notifications", JSONObject().put("action", "read_all"), "تم تحديد الإشعارات كمقروءة") }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF15506B))) { Text(oxideText("قراءة الكل", language)) }
+                        Button(onClick = { sendPost("/api/notifications", JSONObject().put("action", "delete_read"), "تم حذف الإشعارات المقروءة") }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF15506B))) { Text(oxideText("حذف المقروءة", language)) }
                     }
                     if (notifications == null || notifications.length() == 0) {
                         FeatureCard("لا توجد إشعارات", "ستظهر هنا تنبيهات حسابك ومكافآتك الجديدة.")
@@ -803,13 +803,13 @@ private fun OxideNativeApp(api: OxideApi) {
                                 Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
                                     Text(item.optString("title"), color = Cyan, fontWeight = FontWeight.Bold)
                                     Text(item.optString("body"), color = Color.White, fontSize = 13.sp)
-                                    if (reward > 0) Text("المكافأة: $reward نقطة", color = Green)
+                                    if (reward > 0) Text(oxideText("المكافأة: $reward نقطة", language), color = Green)
                                     Text(if (item.isNull("read_at")) "جديد" else "مقروء", color = Muted, fontSize = 11.sp)
                                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                         if (reward > 0 && item.isNull("claimed_at")) {
-                                            Button(onClick = { sendPost("/api/notifications", JSONObject().put("action", "claim").put("id", id), "تمت إضافة $reward نقطة إلى رصيدك") }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF087F9B))) { Text("استلام المكافأة") }
+                                            Button(onClick = { sendPost("/api/notifications", JSONObject().put("action", "claim").put("id", id), "تمت إضافة $reward نقطة إلى رصيدك") }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF087F9B))) { Text(oxideText("استلام المكافأة", language)) }
                                         }
-                                        if (item.isNull("read_at")) TextButton(onClick = { sendPost("/api/notifications", JSONObject().put("action", "read").put("id", id), "تم تحديد الإشعار كمقروء") }) { Text("تحديد كمقروء") }
+                                        if (item.isNull("read_at")) TextButton(onClick = { sendPost("/api/notifications", JSONObject().put("action", "read").put("id", id), "تم تحديد الإشعار كمقروء") }) { Text(oxideText("تحديد كمقروء", language)) }
                                     }
                                 }
                             }
@@ -817,8 +817,8 @@ private fun OxideNativeApp(api: OxideApi) {
                     }
                 }
                 5 -> {
-                    TextButton(onClick = { selected = 0 }) { Text("⬅ العودة للرئيسية", color = Cyan) }
-                    Text("الدعم والمحادثات", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                    TextButton(onClick = { selected = 0 }) { Text(oxideText("⬅ العودة للرئيسية", language), color = Cyan) }
+                    Text(oxideText("الدعم والمحادثات", language), color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
                     val messages = remoteData?.optJSONArray("messages")
                     if (messages == null || messages.length() == 0) {
                         FeatureCard("المحادثة", "لا توجد رسائل سابقة. يمكنك إرسال رسالة للدعم أدناه.")
@@ -849,13 +849,13 @@ private fun OxideNativeApp(api: OxideApi) {
                             }
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF087F9B))
-                    ) { Text("إرسال الرسالة") }
+                    ) { Text(oxideText("إرسال الرسالة", language)) }
                 }
             }
 
             if (sectionLoading && selected != 0) CircularProgressIndicator(modifier = Modifier.size(22.dp), color = Cyan, strokeWidth = 2.dp)
             actionMessage?.let { Text(it, color = Green, fontWeight = FontWeight.Bold) }
-            sectionError?.let { FeatureCard(oxideText("تنبيه", language), it) }
+            sectionError?.let { FeatureCard(oxideText(oxideText("تنبيه", language), language), it) }
             Spacer(Modifier.height(4.dp))
             Text("OXIDE HUB • Android Native", color = Muted, fontSize = 10.sp)
             }
