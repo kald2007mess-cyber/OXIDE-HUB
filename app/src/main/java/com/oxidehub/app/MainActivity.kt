@@ -101,8 +101,8 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 private fun OxideNativeApp(api: OxideApi) {
-    val tabs = listOf("الرئيسية", "المهام", "المكافآت", "الإحالات", "الأخبار", "الدعم", "الإشعارات")
-    val icons = listOf("⌂", "✓", "★", "⇧", "▤", "✉", "●")
+    val tabs = listOf("الرئيسية", "مكافأة", "VIP", "إحالة", "أخبار")
+    val icons = listOf("⌂", "🎁", "♛", "♧", "▤")
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var selected by remember { mutableStateOf(0) }
@@ -179,8 +179,7 @@ private fun OxideNativeApp(api: OxideApi) {
 
     LaunchedEffect(selected, reloadKey) {
         val endpoint = when (selected) {
-            1 -> "/api/missions/status"
-            2 -> "/api/rewards"
+            1 -> "/api/rewards"
             3 -> "/api/referral"
             4 -> "/api/news"
             5 -> "/api/support/messages?after=0"
@@ -193,7 +192,12 @@ private fun OxideNativeApp(api: OxideApi) {
             actionMessage = null
             try {
                 remoteData = api.get(endpoint)
-                if (selected == 2) orderData = api.get("/api/reward-orders")
+                if (selected == 1) {
+                    orderData = api.get("/api/reward-orders")
+                    val missionData = api.get("/api/missions/status")
+                    remoteData?.put("nativeMissions", missionData.optJSONArray("missions") ?: JSONArray())
+                    remoteData?.put("completedMissions", missionData.optInt("completedMissions", 0))
+                }
                 if (remoteData?.optBoolean("success", true) == false) {
                     sectionError = remoteData?.optString("error", "تعذر تحميل البيانات")
                 }
@@ -286,6 +290,8 @@ private fun OxideNativeApp(api: OxideApi) {
                     Text("OXIDE HUB", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Black)
                     Text("YOUR SPACE. YOUR REWARDS.", color = Cyan, fontSize = 10.sp, letterSpacing = 2.sp)
                 }
+                TextButton(onClick = { selected = 5 }) { Text("الدعم", color = Cyan, fontSize = 11.sp) }
+                TextButton(onClick = { selected = 6 }) { Text("🔔", color = Cyan, fontSize = 16.sp) }
                 Surface(color = Color(0xFF15324B), shape = RoundedCornerShape(50)) {
                     Text("● ONLINE", color = Cyan, modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp), fontSize = 11.sp)
                 }
@@ -365,29 +371,6 @@ private fun OxideNativeApp(api: OxideApi) {
                     }
                 }
                 1 -> {
-                    Text("المهام", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-                    val missions = remoteData?.optJSONArray("missions")
-                    if (missions == null || missions.length() == 0) {
-                        if (!sectionLoading) FeatureCard("لا توجد مهام متاحة", "لم يُرجع الخادم مهام مفعّلة لهذا الحساب حالياً.")
-                    } else {
-                        Text("المهام المكتملة: ${remoteData?.optInt("completedMissions", 0) ?: 0}", color = Green)
-                        for (i in 0 until missions.length()) {
-                            val item = missions.optJSONObject(i) ?: continue
-                            MissionCard(
-                                item = item,
-                                onOpen = { url ->
-                                    try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) } catch (_: Exception) {}
-                                },
-                                onPickProof = {
-                                    selectedMissionId = item.optInt("id")
-                                    proofPicker.launch("image/*")
-                                }
-                            )
-                        }
-                    }
-                    if (proofUploading) CircularProgressIndicator(modifier = Modifier.size(22.dp), color = Cyan, strokeWidth = 2.dp)
-                }
-                2 -> {
                     Text("المكافآت", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
                     Text("رصيدك: ${remoteData?.optInt("points", 0) ?: profile?.optInt("points", 0) ?: 0} نقطة", color = Cyan, fontWeight = FontWeight.Bold)
                     val offers = remoteData?.optJSONArray("offers")
@@ -432,6 +415,28 @@ private fun OxideNativeApp(api: OxideApi) {
                         }
                     }
                     FeatureCard("تنبيه", "يتم خصم النقاط من رصيدك عند إنشاء الطلب، ويعاد الرصيد تلقائياً إذا فشل إرساله للإدارة.")
+                    Spacer(Modifier.height(10.dp))
+                    Text("المهمات والعروض", color = Cyan, fontSize = 19.sp, fontWeight = FontWeight.Bold)
+                    Text("المهام المكتملة: ${remoteData?.optInt("completedMissions", 0) ?: 0}", color = Green)
+                    val missions = remoteData?.optJSONArray("nativeMissions")
+                    if (missions == null || missions.length() == 0) {
+                        FeatureCard("لا توجد مهمات متاحة", "ستظهر المهمات هنا عند توفرها.")
+                    } else {
+                        for (i in 0 until missions.length()) {
+                            val item = missions.optJSONObject(i) ?: continue
+                            MissionCard(item = item, onOpen = { url ->
+                                try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) } catch (_: Exception) {}
+                            }, onPickProof = {
+                                selectedMissionId = item.optInt("id")
+                                proofPicker.launch("image/*")
+                            })
+                        }
+                    }
+                    if (proofUploading) CircularProgressIndicator(modifier = Modifier.size(22.dp), color = Cyan, strokeWidth = 2.dp)
+                }
+                2 -> {
+                    Text("👑 OXIDE VIP", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                    FeatureCard("🔒 SOON", "اشتراك VIP سيكون متاحًا قريبًا.")
                 }
                 3 -> {
                     Text("الإحالات والترتيب", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
