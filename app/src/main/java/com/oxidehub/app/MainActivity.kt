@@ -252,31 +252,7 @@ private fun OxideNativeApp(api: OxideApi) {
 
     Scaffold(
         containerColor = Color(0xFF030816),
-        bottomBar = {
-            NavigationBar(
-                modifier = Modifier.padding(horizontal = 6.dp, vertical = 5.dp)
-                    .border(1.dp, Color(0xFF176CAA), RoundedCornerShape(13.dp)),
-                containerColor = Color(0xEB050F20),
-                tonalElevation = 0.dp,
-                windowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0)
-            ) {
-                tabs.forEachIndexed { index, label ->
-                    NavigationBarItem(
-                        selected = selected == index,
-                        onClick = { selected = index },
-                        icon = { Text(icons[index], fontSize = 20.sp) },
-                        label = { Text(label, fontSize = 9.sp, maxLines = 1) },
-                        colors = androidx.compose.material3.NavigationBarItemDefaults.colors(
-                            selectedIconColor = Color(0xFF8FE1FF),
-                            selectedTextColor = Color(0xFF8FE1FF),
-                            indicatorColor = Color(0xFF075A8E),
-                            unselectedIconColor = Color(0xFFC6D5E7),
-                            unselectedTextColor = Color(0xFFC6D5E7)
-                        )
-                    )
-                }
-            }
-        }
+
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize()) {
             if (backgroundImage != null) {
@@ -314,6 +290,31 @@ private fun OxideNativeApp(api: OxideApi) {
                     Text("● ONLINE", color = Cyan, modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp), fontSize = 11.sp)
                 }
             }
+
+            NavigationBar(
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 5.dp)
+                                .border(1.dp, Color(0xFF176CAA), RoundedCornerShape(13.dp)),
+                            containerColor = Color(0xEB050F20),
+                            tonalElevation = 0.dp,
+                            windowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0)
+                        ) {
+                            tabs.forEachIndexed { index, label ->
+                                NavigationBarItem(
+                                    selected = selected == index,
+                                    onClick = { selected = index },
+                                    icon = { Text(icons[index], fontSize = 20.sp) },
+                                    label = { Text(label, fontSize = 9.sp, maxLines = 1) },
+                                    colors = androidx.compose.material3.NavigationBarItemDefaults.colors(
+                                        selectedIconColor = Color(0xFF8FE1FF),
+                                        selectedTextColor = Color(0xFF8FE1FF),
+                                        indicatorColor = Color(0xFF075A8E),
+                                        unselectedIconColor = Color(0xFFC6D5E7),
+                                        unselectedTextColor = Color(0xFFC6D5E7)
+                                    )
+                                )
+                            }
+                        }
+
 
             when (selected) {
                 0 -> {
