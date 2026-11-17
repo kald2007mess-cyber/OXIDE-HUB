@@ -76,6 +76,7 @@ import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material.icons.filled.ThumbDown
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -478,7 +479,7 @@ private fun OxideNativeApp(api: OxideApi) {
                             ) {
                                 Icon(imageVector = icons[index], contentDescription = label, modifier = Modifier.size(23.dp), tint = if (active) Color.White else Color(0xFFD6EAFF))
                                 Text(label, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = if (active) Color.White else Color(0xFFC6D5E7), maxLines = 1)
-                                if (index == 2) Text("🔒 SOON", fontSize = 7.sp, color = Color(0xFFFFD36B))
+                                if (index == 2) Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(2.dp)) { Icon(Icons.Filled.Lock, contentDescription = null, tint = Color(0xFFFFD36B), modifier = Modifier.size(9.dp)); Text("SOON", fontSize = 7.sp, color = Color(0xFFFFD36B)) }
                             }
                         }
                     }
@@ -487,7 +488,7 @@ private fun OxideNativeApp(api: OxideApi) {
 
 
             if (maintenanceActive && selected in listOf(0, 1, 3)) {
-                FeatureCard("🛠️ الموقع تحت الصيانة", maintenanceMessage)
+                FeatureCard("الموقع تحت الصيانة", maintenanceMessage)
             } else when (selected) {
                 0 -> {
                     val progress = (progressData?.optInt("progress", 0) ?: 0).coerceIn(0, 3)
@@ -547,7 +548,7 @@ private fun OxideNativeApp(api: OxideApi) {
                     // Home page intentionally ends after the Usage Guide.
                 }
                 1 -> {
-                    Text("🎁 OXIDE ISLAND", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) { Icon(Icons.Filled.Redeem, contentDescription = null, tint = Cyan, modifier = Modifier.size(24.dp)); Text("OXIDE ISLAND", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold) }
                     Card(colors = CardDefaults.cardColors(containerColor = Color(0xE6084170)), shape = RoundedCornerShape(15.dp)) {
                         Column(Modifier.fillMaxWidth().padding(18.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
                             Text("رصيد النقاط", color = Muted, fontSize = 13.sp)
@@ -587,7 +588,7 @@ private fun OxideNativeApp(api: OxideApi) {
                                 val minutes = (islandRemainingSeconds % 3600) / 60
                                 val seconds = islandRemainingSeconds % 60
                                 Text("الوقت المتبقي للدورة: %02d:%02d:%02d".format(hours, minutes, seconds), color = Muted, fontSize = 12.sp)
-                                Button(onClick = { actionMessage = "🔒 SOON — مشاهدة الإعلانات غير متاحة حاليًا." }, enabled = false, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(disabledContainerColor = Color(0xFF244765))) { Text("🔒 مشاهدة الإعلانات — SOON") }
+                                Button(onClick = { actionMessage = "🔒 SOON — مشاهدة الإعلانات غير متاحة حاليًا." }, enabled = false, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(disabledContainerColor = Color(0xFF244765))) { Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) { Icon(Icons.Filled.Lock, contentDescription = null, modifier = Modifier.size(16.dp)); Text("مشاهدة الإعلانات — SOON") } }
                                 Text("مشاهدة الإعلانات غير متاحة حاليًا، كما في الموقع الأصلي.", color = Muted, fontSize = 11.sp)
                             }
                         }
@@ -715,8 +716,8 @@ private fun OxideNativeApp(api: OxideApi) {
                     }
                 }
                 2 -> {
-                    Text("👑 OXIDE VIP", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-                    FeatureCard("🔒 SOON", "اشتراك VIP سيكون متاحًا قريبًا.")
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) { Icon(Icons.Filled.Star, contentDescription = null, tint = Cyan, modifier = Modifier.size(24.dp)); Text("OXIDE VIP", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold) }
+                    FeatureCard("SOON", "اشتراك VIP سيكون متاحًا قريبًا.")
                 }
                 3 -> {
                     Text("الإحالات والترتيب", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
@@ -736,7 +737,7 @@ private fun OxideNativeApp(api: OxideApi) {
                                         clipboard.setPrimaryClip(android.content.ClipData.newPlainText("OXIDE referral", inviteLink))
                                         actionMessage = "تم نسخ رابط الدعوة"
                                     }
-                                }, enabled = inviteLink.isNotBlank(), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF087F9B))) { Text("📋 نسخ الرابط") }
+                                }, enabled = inviteLink.isNotBlank(), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF087F9B))) { Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) { Icon(Icons.Filled.ContentCopy, contentDescription = null, modifier = Modifier.size(16.dp)); Text("نسخ الرابط") } }
                                 Button(onClick = {
                                     if (inviteLink.isNotBlank()) {
                                         val share = Intent(Intent.ACTION_SEND).apply {
@@ -893,7 +894,7 @@ private fun OxideNativeApp(api: OxideApi) {
                         ) {
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                                 Text(oxideText("الإشعارات", language), color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                                TextButton(onClick = { notificationsOpen = false }) { Text("✕", color = Cyan) }
+                                TextButton(onClick = { notificationsOpen = false }) { Icon(Icons.Filled.Close, contentDescription = "Close", tint = Cyan) }
                             }
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(7.dp)) {
                                 Button(
@@ -924,7 +925,7 @@ private fun OxideNativeApp(api: OxideApi) {
                                             Column(Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                                                 Text(item.optString("title"), color = Cyan, fontWeight = FontWeight.Bold)
                                                 Text(item.optString("body"), color = Color.White, fontSize = 13.sp)
-                                                if (reward > 0) Text("🎁 $reward", color = Green, fontSize = 12.sp)
+                                                if (reward > 0) Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) { Icon(Icons.Filled.Redeem, contentDescription = null, tint = Green, modifier = Modifier.size(16.dp)); Text("$reward", color = Green, fontSize = 12.sp) }
                                                 Text(if (item.isNull("read_at")) oxideText("جديد", language) else oxideText("مقروء", language), color = Muted, fontSize = 10.sp)
                                                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                                                     if (reward > 0 && item.isNull("claimed_at")) {
@@ -1208,7 +1209,7 @@ private fun NewsCard(
                 Image(bitmap = mediaBitmap!!, contentDescription = post.optString("title"), modifier = Modifier.fillMaxWidth().height(180.dp), contentScale = ContentScale.Crop)
             }
             Text("المشاهدات: " + post.optInt("views") + " • التعليقات: " + post.optInt("comments_count"), color = Muted, fontSize = 11.sp)
-            Text("❤️ " + post.optInt("heart_count") + "   😡 " + post.optInt("angry_count") + "   🥺 " + post.optInt("sad_count") + "   👍 " + post.optInt("like_count") + "   👎 " + post.optInt("dislike_count"), color = Cyan)
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) { Icon(Icons.Filled.Favorite, contentDescription = "Hearts", tint = Cyan, modifier = Modifier.size(15.dp)); Text(post.optInt("heart_count").toString(), color = Cyan); Icon(Icons.Filled.SentimentDissatisfied, contentDescription = "Angry", tint = Cyan, modifier = Modifier.size(15.dp)); Text(post.optInt("angry_count").toString(), color = Cyan); Icon(Icons.Filled.Favorite, contentDescription = "Sad", tint = Cyan, modifier = Modifier.size(15.dp)); Text(post.optInt("sad_count").toString(), color = Cyan); Icon(Icons.Filled.ThumbUp, contentDescription = "Likes", tint = Cyan, modifier = Modifier.size(15.dp)); Text(post.optInt("like_count").toString(), color = Cyan); Icon(Icons.Filled.ThumbDown, contentDescription = "Dislikes", tint = Cyan, modifier = Modifier.size(15.dp)); Text(post.optInt("dislike_count").toString(), color = Cyan) }
             Text("تفاعلك: " + post.optString("my_reaction", "لم تتفاعل بعد"), color = Muted, fontSize = 11.sp)
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 listOf(
