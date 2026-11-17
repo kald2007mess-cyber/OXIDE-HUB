@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -1033,117 +1035,142 @@ private fun OxideNativeApp(api: OxideApi) {
 }
 
 
+private data class OxideRainDrop(
+    val x: Float, val y: Float, val length: Float,
+    val speed: Float, val width: Float, val alpha: Float, val drift: Float
+)
+private data class OxideGlassDrop(
+    val x: Float, val y: Float, val radius: Float,
+    val vy: Float, val vx: Float, val trail: Float,
+    val alpha: Float, val wobble: Float
+)
+
 @Composable
 private fun OxideRainOverlay() {
-    // A continuous 60-second animation clock keeps each drop moving smoothly.
-    val transition = rememberInfiniteTransition(label = "oxide-real-rain")
+    val transition = rememberInfiniteTransition(label = "oxide-original-rain-clock")
     val seconds by transition.animateFloat(
         initialValue = 0f,
         targetValue = 60f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(60000, easing = LinearEasing)
-        ),
-        label = "oxide-rain-clock"
+        animationSpec = infiniteRepeatable(animation = tween(60000, easing = LinearEasing)),
+        label = "oxide-original-rain-time"
     )
+    var viewport by remember { mutableStateOf(IntSize.Zero) }
+    val rainDrops = remember(viewport) {
+        val w = viewport.width.toFloat()
+        val h = viewport.height.toFloat()
+        val count = ((w * h / 3000f).toInt()).coerceIn(100, 440)
+        List(count) {
+            OxideRainDrop(
+                x = kotlin.random.Random.nextFloat() * (w + 40f) - 20f,
+                y = kotlin.random.Random.nextFloat() * (h * 2f) - h,
+                length = 9f + kotlin.random.Random.nextFloat() * 16f,
+                speed = 420f + kotlin.random.Random.nextFloat() * 430f,
+                width = 0.55f + kotlin.random.Random.nextFloat() * 0.8f,
+                alpha = 0.16f + kotlin.random.Random.nextFloat() * 0.32f,
+                drift = -28f + kotlin.random.Random.nextFloat() * 46f
+            )
+        }
+    }
+    val glassDrops = remember(viewport) {
+        val w = viewport.width.toFloat()
+        val h = viewport.height.toFloat()
+        val count = (w / 7f).toInt().coerceIn(24, 85)
+        List(count) {
+            OxideGlassDrop(
+                x = kotlin.random.Random.nextFloat() * w,
+                y = kotlin.random.Random.nextFloat() * h,
+                radius = 1.1f + kotlin.random.Random.nextFloat() * 3.3f,
+                vy = 7f + kotlin.random.Random.nextFloat() * 18f,
+                vx = -2f + kotlin.random.Random.nextFloat() * 4f,
+                trail = 12f + kotlin.random.Random.nextFloat() * 36f,
+                alpha = 0.18f + kotlin.random.Random.nextFloat() * 0.30f,
+                wobble = kotlin.random.Random.nextFloat() * (Math.PI.toFloat() * 2f)
+            )
+        }
+    }
 
-    Canvas(modifier = Modifier.fillMaxSize()) {
+    Canvas(
+        modifier = Modifier.fillMaxSize().onSizeChanged { viewport = it }
+    ) {
         val w = size.width
         val h = size.height
+        if (w <= 0f || h <= 0f) return@Canvas
         val t = seconds
+        val timeMs = t * 1000f
 
-        // Subtle star layer from the website's independently animated .stars background.
-        val starCount = (w * h / 18000f).toInt().coerceIn(35, 120)
-        for (i in 0 until starCount) {
-            val x = (i * 83.17f + 19f) % w
-            val y = (i * 137.31f + t * 0.55f) % h
-            val radius = 0.45f + (i % 4) * 0.22f
-            val alpha = 0.16f + (i % 5) * 0.035f
-            drawCircle(
-                color = Color(0xFFB9DFFF).copy(alpha = alpha),
-                radius = radius,
-                center = Offset(x, y)
-            )
-        }
-
-        // Fine rain streaks falling diagonally, matching the website's speed and density.
-        val rainCount = (w * h / 3000f).toInt().coerceIn(150, 520)
-        for (i in 0 until rainCount) {
-            val seed = i.toFloat()
-            val xStart = ((seed * 47.7f) % (w + 35f))
-            val speed = 420f + (i % 17) * 26.8f
-            val drift = -28f + (i % 13) * 3.8f
-            val y = ((seed * 91.3f + t * speed) % (h + 70f)) - 35f
-            val length = 9f + (i % 17) * 0.95f
-            val x = xStart + drift * t * 0.035f
-            drawLine(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFFCCEBFF).copy(alpha = 0f),
-                        Color(0xFFC2E7FF).copy(alpha = 0.10f + (i % 5) * 0.025f),
-                        Color(0xFFEBF8FF).copy(alpha = 0.24f + (i % 5) * 0.045f)
-                    ),
-                    startY = y - length,
-                    endY = y
+        // Falling rain streaks: randomized count, length, speed, width and diagonal drift.
+        rainDrops.forEach { d ->
+            val y = ((d.y + d.speed * t + h + 35f) % (h + 70f)) - 35f
+            val x = d.x + d.drift * t * 0.035f
+            val endX = x + d.drift * 0.035f
+            val rainBrush = Brush.linearGradient(
+                colors = listOf(
+                    Color(0xFFCCEBFF).copy(alpha = 0f),
+                    Color(0xFFC2E7FF).copy(alpha = d.alpha * 0.48f),
+                    Color(0xFFEBF8FF).copy(alpha = d.alpha)
                 ),
-                start = Offset(x, y - length),
-                end = Offset(x + drift * 0.035f, y),
-                strokeWidth = if (i % 3 == 0) 1.2f else 0.75f,
+                start = Offset(x, y - d.length),
+                end = Offset(endX, y)
+            )
+            drawLine(
+                brush = rainBrush,
+                start = Offset(x, y - d.length),
+                end = Offset(endX, y),
+                strokeWidth = d.width,
                 cap = StrokeCap.Round
             )
         }
 
-        // Larger water beads slowly slide down the glass with faint wet trails.
-        val glassCount = (w / 7f).toInt().coerceIn(24, 85)
-        for (i in 0 until glassCount) {
-            val seed = i.toFloat()
-            val radius = 1.1f + (i % 8) * 0.47f
-            val vy = 7f + (i % 10) * 2f
-            val trailLength = 12f + (i % 13) * 2.8f
-            val alpha = 0.18f + (i % 7) * 0.05f
-            val phase = i * 0.71f
-            val baseX = (seed * 109f + 23f) % w
-            val x = baseX + kotlin.math.sin(t * 0.7f + phase) * (i % 3) * 1.3f
-            val y = ((seed * 173f + t * vy) % (h + 40f)) - 20f
-
-            drawLine(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFFC3E5FF).copy(alpha = 0f),
-                        Color(0xFFC6E5FF).copy(alpha = alpha * 0.23f)
-                    ),
-                    startY = y - trailLength,
-                    endY = y
+        // Water beads on the glass, with a faint trailing wet line and reflected highlights.
+        glassDrops.forEach { d ->
+            val y = ((d.y + d.vy * t + h + 50f) % (h + 100f)) - 50f
+            val x = d.x + kotlin.math.sin(timeMs * 0.0007f + d.wobble) * d.vx * t
+            val trailBrush = Brush.linearGradient(
+                colors = listOf(
+                    Color(0xFFC3E5FF).copy(alpha = 0f),
+                    Color(0xFFC6E5FF).copy(alpha = d.alpha * 0.23f)
                 ),
-                start = Offset(x, y - trailLength),
+                start = Offset(x, y - d.trail),
+                end = Offset(x, y)
+            )
+            drawLine(
+                brush = trailBrush,
+                start = Offset(x, y - d.trail),
                 end = Offset(x, y),
-                strokeWidth = (radius * 0.55f).coerceAtLeast(0.7f),
+                strokeWidth = (d.radius * 0.55f).coerceAtLeast(0.7f),
                 cap = StrokeCap.Round
             )
 
-            drawCircle(
+            drawOval(
                 brush = Brush.radialGradient(
                     colors = listOf(
-                        Color.White.copy(alpha = alpha * 0.9f),
-                        Color(0xFFCEEBFF).copy(alpha = alpha * 0.42f),
-                        Color(0xFF60A4DC).copy(alpha = alpha * 0.19f),
+                        Color.White.copy(alpha = d.alpha * 0.9f),
+                        Color(0xFFCEEBFF).copy(alpha = d.alpha * 0.42f),
+                        Color(0xFF60A4DC).copy(alpha = d.alpha * 0.19f),
                         Color(0xFFE1F5FF).copy(alpha = 0f)
                     ),
-                    center = Offset(x - radius * 0.28f, y - radius * 0.35f),
-                    radius = radius * 1.35f
+                    center = Offset(x - d.radius * 0.36f, y - d.radius * 0.42f),
+                    radius = d.radius * 1.35f
                 ),
-                radius = radius * 1.18f,
-                center = Offset(x, y)
+                topLeft = Offset(x - d.radius * 0.78f, y - d.radius * 1.18f),
+                size = androidx.compose.ui.geometry.Size(d.radius * 1.56f, d.radius * 2.36f)
             )
-            drawCircle(
-                color = Color(0xFFE7F7FF).copy(alpha = alpha * 0.65f),
-                radius = radius * 0.48f,
-                center = Offset(x - radius * 0.12f, y - radius * 0.12f),
+            drawArc(
+                color = Color(0xFFE7F7FF).copy(alpha = d.alpha * 0.65f),
+                startAngle = 195f,
+                sweepAngle = 105f,
+                useCenter = false,
+                topLeft = Offset(x - d.radius * 0.60f, y - d.radius * 0.90f),
+                size = androidx.compose.ui.geometry.Size(d.radius * 0.96f, d.radius * 1.56f),
                 style = Stroke(width = 0.65f)
             )
-            drawCircle(
-                color = Color.White.copy(alpha = alpha * 0.8f),
-                radius = (radius * 0.15f).coerceAtLeast(0.45f),
-                center = Offset(x - radius * 0.25f, y - radius * 0.42f)
+            drawOval(
+                color = Color.White.copy(alpha = d.alpha * 0.8f),
+                topLeft = Offset(x - d.radius * 0.40f, y - d.radius * 0.67f),
+                size = androidx.compose.ui.geometry.Size(
+                    (d.radius * 0.30f).coerceAtLeast(0.9f),
+                    (d.radius * 0.50f).coerceAtLeast(1.4f)
+                )
             )
         }
     }
