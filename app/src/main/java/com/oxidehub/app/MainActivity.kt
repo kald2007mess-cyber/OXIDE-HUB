@@ -570,63 +570,101 @@ private fun OxideNativeApp(api: OxideApi) {
 
 @Composable
 private fun OxideRainOverlay() {
-    val transition = rememberInfiniteTransition(label = "oxide-rain")
-    val progress by transition.animateFloat(
+    // A continuous 60-second animation clock keeps each drop moving smoothly.
+    val transition = rememberInfiniteTransition(label = "oxide-real-rain")
+    val seconds by transition.animateFloat(
         initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(tween(1150, easing = LinearEasing)),
-        label = "rain-progress"
+        targetValue = 60f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(60000, easing = LinearEasing)
+        ),
+        label = "oxide-rain-clock"
     )
+
     Canvas(modifier = Modifier.fillMaxSize()) {
         val w = size.width
         val h = size.height
-        // Soft moving star field, matching the website's subtle blue-white stars.
-        for (i in 0 until 42) {
-            val x = ((i * 83f) % w)
-            val y = ((i * 137f + progress * 26f) % h)
-            drawCircle(
-                color = Color.White.copy(alpha = if (i % 4 == 0) 0.24f else 0.11f),
-                radius = if (i % 5 == 0) 1.8f else 1.0f,
-                center = Offset(x, y)
-            )
-        }
-        // Fine diagonal rain streaks, continuously falling over the full screen.
-        for (i in 0 until 150) {
-            val x = ((i * 47.7f) % (w + 35f))
-            val baseY = ((i * 91.3f + progress * (h + 90f) * (0.65f + (i % 7) * 0.09f)) % (h + 70f)) - 35f
-            val length = 8f + (i % 9) * 1.7f
+        val t = seconds
+
+        // Fine rain streaks falling diagonally, matching the website's speed and density.
+        val rainCount = (w * h / 3000f).toInt().coerceIn(100, 440)
+        for (i in 0 until rainCount) {
+            val seed = i.toFloat()
+            val xStart = ((seed * 47.7f) % (w + 35f))
+            val speed = 420f + (i % 17) * 26.8f
+            val drift = -28f + (i % 13) * 3.8f
+            val y = ((seed * 91.3f + t * speed) % (h + 70f)) - 35f
+            val length = 9f + (i % 17) * 0.95f
+            val x = xStart + drift * t * 0.035f
             drawLine(
                 brush = Brush.verticalGradient(
-                    colors = listOf(Color.Transparent, Color(0xFFA9D8FF).copy(alpha = 0.12f + (i % 5) * 0.035f), Color(0xFFEAF7FF).copy(alpha = 0.24f)),
-                    startY = baseY - length,
-                    endY = baseY
+                    colors = listOf(
+                        Color(0xFFCCEBFF).copy(alpha = 0f),
+                        Color(0xFFC2E7FF).copy(alpha = 0.10f + (i % 5) * 0.025f),
+                        Color(0xFFEBF8FF).copy(alpha = 0.16f + (i % 5) * 0.04f)
+                    ),
+                    startY = y - length,
+                    endY = y
                 ),
-                start = Offset(x, baseY - length),
-                end = Offset(x - 2.2f, baseY),
-                strokeWidth = if (i % 3 == 0) 1.25f else 0.8f,
+                start = Offset(x, y - length),
+                end = Offset(x + drift * 0.035f, y),
+                strokeWidth = if (i % 3 == 0) 1.2f else 0.75f,
                 cap = StrokeCap.Round
             )
         }
-        // Glass beads and their faint trails.
-        for (i in 0 until 34) {
-            val x = ((i * 109f + 23f) % w)
-            val y = ((i * 173f + progress * (h + 55f) * (0.12f + (i % 4) * 0.035f)) % (h + 40f)) - 20f
+
+        // Larger water beads slowly slide down the glass with faint wet trails.
+        val glassCount = (w / 7f).toInt().coerceIn(24, 85)
+        for (i in 0 until glassCount) {
+            val seed = i.toFloat()
+            val radius = 1.1f + (i % 8) * 0.47f
+            val vy = 7f + (i % 10) * 2f
+            val trailLength = 12f + (i % 13) * 2.8f
+            val alpha = 0.18f + (i % 7) * 0.05f
+            val phase = i * 0.71f
+            val baseX = (seed * 109f + 23f) % w
+            val x = baseX + kotlin.math.sin(t * 0.7f + phase) * (i % 3) * 1.3f
+            val y = ((seed * 173f + t * vy) % (h + 40f)) - 20f
+
             drawLine(
-                color = Color(0xFFBFE4FF).copy(alpha = 0.10f),
-                start = Offset(x, y - 18f),
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFFC3E5FF).copy(alpha = 0f),
+                        Color(0xFFC6E5FF).copy(alpha = alpha * 0.23f)
+                    ),
+                    startY = y - trailLength,
+                    endY = y
+                ),
+                start = Offset(x, y - trailLength),
                 end = Offset(x, y),
-                strokeWidth = 2.0f,
+                strokeWidth = (radius * 0.55f).coerceAtLeast(0.7f),
                 cap = StrokeCap.Round
             )
+
             drawCircle(
-                color = Color(0xFFDDF2FF).copy(alpha = 0.22f),
-                radius = 2.0f + (i % 3) * 0.65f,
+                brush = Brush.radialGradient(
+                    colors = listOf(
+                        Color.White.copy(alpha = alpha * 0.9f),
+                        Color(0xFFCEEBFF).copy(alpha = alpha * 0.42f),
+                        Color(0xFF60A4DC).copy(alpha = alpha * 0.19f),
+                        Color(0xFFE1F5FF).copy(alpha = 0f)
+                    ),
+                    center = Offset(x - radius * 0.28f, y - radius * 0.35f),
+                    radius = radius * 1.35f
+                ),
+                radius = radius * 1.18f,
                 center = Offset(x, y)
             )
             drawCircle(
-                color = Color.White.copy(alpha = 0.34f),
-                radius = 0.8f,
-                center = Offset(x - 1f, y - 1f)
+                color = Color(0xFFE7F7FF).copy(alpha = alpha * 0.65f),
+                radius = radius * 0.48f,
+                center = Offset(x - radius * 0.12f, y - radius * 0.12f),
+                style = Stroke(width = 0.65f)
+            )
+            drawCircle(
+                color = Color.White.copy(alpha = alpha * 0.8f),
+                radius = (radius * 0.15f).coerceAtLeast(0.45f),
+                center = Offset(x - radius * 0.25f, y - radius * 0.42f)
             )
         }
     }
