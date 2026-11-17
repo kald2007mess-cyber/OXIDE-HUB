@@ -730,6 +730,7 @@ private fun OxideNativeApp(api: OxideApi) {
                     }
                 }
                 6 -> {
+                    TextButton(onClick = { selected = 0 }) { Text("⬅ إغلاق الإشعارات", color = Cyan) }
                     Text("الإشعارات", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
                     val notifications = remoteData?.optJSONArray("notifications")
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -761,6 +762,7 @@ private fun OxideNativeApp(api: OxideApi) {
                     }
                 }
                 5 -> {
+                    TextButton(onClick = { selected = 0 }) { Text("⬅ العودة للرئيسية", color = Cyan) }
                     Text("الدعم والمحادثات", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
                     val messages = remoteData?.optJSONArray("messages")
                     if (messages == null || messages.length() == 0) {
