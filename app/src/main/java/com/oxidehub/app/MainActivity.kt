@@ -581,8 +581,31 @@ private fun OxideNativeApp(api: OxideApi) {
                         }
                     } else {
                         Text("المهمات والعروض", color = Cyan, fontSize = 19.sp, fontWeight = FontWeight.Bold)
-                        Text("المهام المكتملة: ${remoteData?.optInt("completedMissions", 0) ?: 0}", color = Green)
                         val missions = remoteData?.optJSONArray("nativeMissions")
+                        val missionTotal = missions?.length() ?: 0
+                        var missionCompleted = 0
+                        if (missions != null) for (index in 0 until missions.length()) {
+                            if (missions.optJSONObject(index)?.optString("status") == "approved") missionCompleted++
+                        }
+                        val missionPercent = if (missionTotal > 0) missionCompleted.toFloat() / missionTotal.toFloat() else 0f
+                        Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(14.dp)) {
+                            Column(Modifier.fillMaxWidth().padding(15.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
+                                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                    Text("Mission Journey", color = Color.White, fontWeight = FontWeight.Bold)
+                                    Text("$missionCompleted / $missionTotal", color = Cyan, fontWeight = FontWeight.Bold)
+                                }
+                                androidx.compose.material3.LinearProgressIndicator(progress = { missionPercent }, modifier = Modifier.fillMaxWidth(), color = Cyan, trackColor = Color(0xFF244765))
+                                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                    Text("${(missionPercent * 100).toInt()}% مكتمل", color = Muted, fontSize = 11.sp)
+                                    Text("${(missionTotal - missionCompleted).coerceAtLeast(0)} مهمات متبقية", color = Muted, fontSize = 11.sp)
+                                }
+                                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                    Text("الرصيد: ${remoteData?.optInt("points", profile?.optInt("points", 0) ?: 0) ?: 0} نقطة", color = Cyan, fontSize = 11.sp)
+                                    Text("المهمات المكتملة", color = Muted, fontSize = 11.sp)
+                                }
+                            }
+                        }
+                        Text("المهمات المتاحة", color = Cyan, fontWeight = FontWeight.Bold)
                         if (missions == null || missions.length() == 0) FeatureCard("لا توجد مهمات متاحة", "ستظهر المهمات هنا عند توفرها.")
                         else for (i in 0 until missions.length()) {
                             val item = missions.optJSONObject(i) ?: continue
