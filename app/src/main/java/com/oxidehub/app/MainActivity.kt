@@ -729,8 +729,8 @@ private fun OxideNativeApp(api: OxideApi) {
                                     }
                                 }, enabled = inviteLink.isNotBlank(), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF15506B))) { Text(oxideText("↗ مشاركة", language)) }
                             }
-                            Text(oxideText("الأصدقاء المدعوون: ${user?.optInt(", language)referrals", 0) ?: 0}", color = Color.White)
-                            Text(oxideText("النقاط المكتسبة من الإحالات: ${user?.optInt(", language)earned", 0) ?: 0}", color = Muted)
+                            Text("الأصدقاء المدعوون: ${user?.optInt(\"referrals\", 0) ?: 0}", color = Color.White)
+                            Text("النقاط المكتسبة من الإحالات: ${user?.optInt(\"earned\", 0) ?: 0}", color = Muted)
                         }
                     }
                     Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(18.dp)) {
