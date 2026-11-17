@@ -576,6 +576,7 @@ private fun OxideNativeApp(api: OxideApi) {
                                 val cost = offer.optInt("points")
                                 Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(18.dp)) {
                                     Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        RewardImage(offerId)
                                         Text(offer.optString("name"), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 17.sp)
                                         Text("$cost نقطة", color = Cyan)
                                         Button(onClick = {
@@ -942,6 +943,32 @@ private fun OxideRainOverlay() {
                 center = Offset(x - radius * 0.25f, y - radius * 0.42f)
             )
         }
+    }
+}
+
+@Composable
+private fun RewardImage(offerId: Int) {
+    var bitmap by remember(offerId) { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
+    LaunchedEffect(offerId) {
+        val filename = when (offerId) {
+            1 -> "oxide_55_coins.png"
+            2 -> "oxide_145_coins.png"
+            3 -> "oxide_premium.png"
+            4 -> "oxide_25_bp_coins.png"
+            else -> null
+        }
+        if (filename != null) {
+            bitmap = withContext(Dispatchers.IO) {
+                try {
+                    URL(OxideApi.BASE_URL + "/" + filename).openStream().use {
+                        BitmapFactory.decodeStream(it)?.asImageBitmap()
+                    }
+                } catch (_: Exception) { null }
+            }
+        }
+    }
+    if (bitmap != null) {
+        Image(bitmap = bitmap!!, contentDescription = null, modifier = Modifier.fillMaxWidth().height(125.dp), contentScale = ContentScale.Fit)
     }
 }
 
