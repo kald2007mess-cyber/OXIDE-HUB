@@ -78,6 +78,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -411,7 +412,7 @@ private fun OxideNativeApp(api: OxideApi) {
                     TextButton(onClick = { languageExpanded = true }) { Icon(Icons.Filled.Language, contentDescription = "Language", tint = Cyan) }
                     DropdownMenu(expanded = languageExpanded, onDismissRequest = { languageExpanded = false }) {
                         listOf("ar" to "العربية", "en" to "English", "fr" to "Français", "es" to "Español", "ru" to "Русский", "de" to "Deutsch", "tr" to "Türkçe", "id" to "Bahasa Indonesia").forEach { (code, label) ->
-                            DropdownMenuItem(text = { Text(if (language == code) "✓ $label" else label) }, onClick = {
+                            DropdownMenuItem(text = { Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(7.dp)) { if (language == code) Icon(Icons.Filled.Check, contentDescription = null, tint = Cyan, modifier = Modifier.size(16.dp)); Text(label) } }, onClick = {
                                 language = code
                                 preferences.edit().putString("language", code).apply()
                                 languageExpanded = false
