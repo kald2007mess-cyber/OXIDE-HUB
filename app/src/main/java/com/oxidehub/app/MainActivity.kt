@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.offset
@@ -333,16 +334,14 @@ private fun OxideNativeApp(api: OxideApi) {
                             shape = RoundedCornerShape(9.dp),
                             border = if (active) androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF00AAFF)) else null
                         ) {
-                            androidx.compose.foundation.clickable { selected = index }.let { click ->
-                                Column(
-                                    modifier = Modifier.fillMaxSize().then(click).padding(horizontal = 2.dp, vertical = 7.dp),
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.Center
-                                ) {
-                                    Text(icons[index], fontSize = 21.sp, color = if (active) Color.White else Color(0xFFD6EAFF))
-                                    Text(label, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = if (active) Color.White else Color(0xFFC6D5E7), maxLines = 1)
-                                    if (index == 2) Text("🔒 SOON", fontSize = 7.sp, color = Color(0xFFFFD36B))
-                                }
+                            Column(
+                                modifier = Modifier.fillMaxSize().clickable { selected = index }.padding(horizontal = 2.dp, vertical = 7.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Text(icons[index], fontSize = 21.sp, color = if (active) Color.White else Color(0xFFD6EAFF))
+                                Text(label, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = if (active) Color.White else Color(0xFFC6D5E7), maxLines = 1)
+                                if (index == 2) Text("🔒 SOON", fontSize = 7.sp, color = Color(0xFFFFD36B))
                             }
                         }
                     }
