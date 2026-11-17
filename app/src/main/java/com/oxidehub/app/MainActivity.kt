@@ -49,6 +49,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.ui.window.Dialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -113,9 +114,11 @@ private fun OxideNativeApp(api: OxideApi) {
         animationSpec = infiniteRepeatable(animation = tween(35000, easing = LinearEasing), repeatMode = androidx.compose.animation.core.RepeatMode.Reverse),
         label = "oxide-background-offset"
     )
-    val tabs = listOf("الرئيسية", "مكافأة", "VIP", "إحالة", "أخبار")
-    val icons = listOf("⌂", "🎁", "♛", "♧", "▤")
     val context = LocalContext.current
+    val preferences = remember { context.getSharedPreferences("oxide_native_settings", android.content.Context.MODE_PRIVATE) }
+    var language by remember { mutableStateOf(preferences.getString("language", "ar") ?: "ar") }
+    val tabs = listOf(oxideText("الرئيسية", language), oxideText("مكافأة", language), "VIP", oxideText("إحالة", language), oxideText("أخبار", language))
+    val icons = listOf("⌂", "🎁", "♛", "♧", "▤")
     val scope = rememberCoroutineScope()
     var selected by remember { mutableStateOf(0) }
     var loading by remember { mutableStateOf(true) }
@@ -138,6 +141,9 @@ private fun OxideNativeApp(api: OxideApi) {
     var islandData by remember { mutableStateOf<JSONObject?>(null) }
     var progressData by remember { mutableStateOf<JSONObject?>(null) }
     var settingsExpanded by remember { mutableStateOf(false) }
+    var languageExpanded by remember { mutableStateOf(false) }
+    var notificationsOpen by remember { mutableStateOf(false) }
+    var notificationData by remember { mutableStateOf<JSONObject?>(null) }
     var islandTab by remember { mutableStateOf(0) }
     var islandRemainingSeconds by remember { mutableStateOf(0) }
     var commentsData by remember { mutableStateOf<JSONObject?>(null) }
@@ -268,6 +274,13 @@ private fun OxideNativeApp(api: OxideApi) {
         }
     }
 
+    LaunchedEffect(notificationsOpen, reloadKey) {
+        if (notificationsOpen) {
+            try { notificationData = api.get("/api/notifications") }
+            catch (e: Exception) { sectionError = e.localizedMessage ?: "تعذر تحميل الإشعارات" }
+        }
+    }
+
     fun linkNativeAccount() {
         scope.launch {
             loading = true
@@ -348,13 +361,33 @@ private fun OxideNativeApp(api: OxideApi) {
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                TextButton(onClick = { selected = 6 }) { Text("🔔", color = Cyan, fontSize = 17.sp) }
+                Box {
+                    TextButton(onClick = { notificationsOpen = true }) { Text("🔔", color = Cyan, fontSize = 17.sp) }
+                    val unreadCount = notificationData?.optJSONArray("notifications")?.let { array ->
+                        (0 until array.length()).count { index -> array.optJSONObject(index)?.isNull("read_at") == true }
+                    } ?: 0
+                    if (unreadCount > 0) {
+                        Box(Modifier.align(Alignment.TopEnd).size(8.dp).background(Color(0xFFEF4444), RoundedCornerShape(50)))
+                    }
+                }
+                Box {
+                    TextButton(onClick = { languageExpanded = true }) { Text("🌐", color = Cyan, fontSize = 17.sp) }
+                    DropdownMenu(expanded = languageExpanded, onDismissRequest = { languageExpanded = false }) {
+                        listOf("ar" to "العربية", "en" to "English", "fr" to "Français", "es" to "Español", "ru" to "Русский", "de" to "Deutsch", "tr" to "Türkçe", "id" to "Bahasa Indonesia").forEach { (code, label) ->
+                            DropdownMenuItem(text = { Text(if (language == code) "✓ $label" else label) }, onClick = {
+                                language = code
+                                preferences.edit().putString("language", code).apply()
+                                languageExpanded = false
+                            })
+                        }
+                    }
+                }
                 Box {
                     TextButton(onClick = { settingsExpanded = true }) { Text("⚙️", color = Cyan, fontSize = 17.sp) }
                     DropdownMenu(expanded = settingsExpanded, onDismissRequest = { settingsExpanded = false }) {
-                        DropdownMenuItem(text = { Text("ربط حساب Google Play") }, onClick = {
+                        DropdownMenuItem(text = { Text(oxideText("ربط حساب Google Play", language)) }, onClick = {
                             settingsExpanded = false
-                            actionMessage = "ربط Google Play Games سيتاح بعد دمج الخدمة في تطبيق Android."
+                            actionMessage = oxideText("ربط Google Play Games سيتاح بعد دمج الخدمة في تطبيق Android.", language)
                         })
                     }
                 }
@@ -821,9 +854,77 @@ private fun OxideNativeApp(api: OxideApi) {
 
             if (sectionLoading && selected != 0) CircularProgressIndicator(modifier = Modifier.size(22.dp), color = Cyan, strokeWidth = 2.dp)
             actionMessage?.let { Text(it, color = Green, fontWeight = FontWeight.Bold) }
-            sectionError?.let { FeatureCard("تنبيه", it) }
+            sectionError?.let { FeatureCard(oxideText("تنبيه", language), it) }
             Spacer(Modifier.height(4.dp))
             Text("OXIDE HUB • Android Native", color = Muted, fontSize = 10.sp)
+            }
+            if (notificationsOpen) {
+                Dialog(onDismissRequest = { notificationsOpen = false }) {
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        color = Color(0xF20A1A30),
+                        shape = RoundedCornerShape(18.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF168BD0))
+                    ) {
+                        Column(
+                            Modifier.fillMaxWidth().heightIn(max = 620.dp).padding(15.dp),
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                                Text(oxideText("الإشعارات", language), color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                                TextButton(onClick = { notificationsOpen = false }) { Text("✕", color = Cyan) }
+                            }
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+                                Button(
+                                    onClick = { sendPost("/api/notifications", JSONObject().put("action", "read_all"), oxideText("تم تحديد الإشعارات كمقروءة", language)) },
+                                    modifier = Modifier.weight(1f),
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF15506B))
+                                ) { Text(oxideText("قراءة الكل", language), fontSize = 11.sp) }
+                                Button(
+                                    onClick = { sendPost("/api/notifications", JSONObject().put("action", "delete_read"), oxideText("تم حذف الإشعارات المقروءة", language)) },
+                                    modifier = Modifier.weight(1f),
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF15506B))
+                                ) { Text(oxideText("حذف المقروءة", language), fontSize = 11.sp) }
+                            }
+                            Column(Modifier.fillMaxWidth().weight(1f, fill = false).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                val items = notificationData?.optJSONArray("notifications")
+                                if (items == null || items.length() == 0) {
+                                    Text(oxideText("لا توجد إشعارات حتى الآن.", language), color = Muted, modifier = Modifier.padding(vertical = 22.dp))
+                                } else {
+                                    for (i in 0 until items.length()) {
+                                        val item = items.optJSONObject(i) ?: continue
+                                        val id = item.optInt("id")
+                                        val reward = item.optInt("reward_points")
+                                        Card(
+                                            colors = CardDefaults.cardColors(containerColor = Color(0xCC102A46)),
+                                            shape = RoundedCornerShape(12.dp),
+                                            border = androidx.compose.foundation.BorderStroke(1.dp, if (item.isNull("read_at")) Color(0xFF168BD0) else Color(0xFF29445E))
+                                        ) {
+                                            Column(Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                                Text(item.optString("title"), color = Cyan, fontWeight = FontWeight.Bold)
+                                                Text(item.optString("body"), color = Color.White, fontSize = 13.sp)
+                                                if (reward > 0) Text("🎁 $reward", color = Green, fontSize = 12.sp)
+                                                Text(if (item.isNull("read_at")) oxideText("جديد", language) else oxideText("مقروء", language), color = Muted, fontSize = 10.sp)
+                                                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                                    if (reward > 0 && item.isNull("claimed_at")) {
+                                                        Button(onClick = { sendPost("/api/notifications", JSONObject().put("action", "claim").put("id", id), "تمت إضافة $reward نقطة إلى رصيدك") }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF087F9B))) {
+                                                            Text(oxideText("استلام المكافأة", language), fontSize = 10.sp)
+                                                        }
+                                                    }
+                                                    if (item.isNull("read_at")) {
+                                                        TextButton(onClick = { sendPost("/api/notifications", JSONObject().put("action", "read").put("id", id), oxideText("تم تحديد الإشعار كمقروء", language)) }) {
+                                                            Text(oxideText("تحديد كمقروء", language), fontSize = 10.sp)
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -1103,4 +1204,28 @@ private fun FeatureCard(title: String, description: String) {
             Text(description, color = Muted, fontSize = 12.sp, lineHeight = 18.sp)
         }
     }
+}
+
+ 
+private fun oxideText(arabic: String, language: String): String {
+    if (language == "ar") return arabic
+    val translations = mapOf(
+        "الرئيسية" to listOf("Home", "Accueil", "Inicio", "Главная", "Startseite", "Ana Sayfa", "Beranda"),
+        "مكافأة" to listOf("Rewards", "Récompenses", "Recompensas", "Награды", "Belohnungen", "Ödüller", "Hadiah"),
+        "إحالة" to listOf("Referral", "Parrainage", "Referidos", "Рефералы", "Empfehlung", "Davet", "Referral"),
+        "أخبار" to listOf("News", "Actualités", "Noticias", "Новости", "Neuigkeiten", "Haberler", "Berita"),
+        "الإشعارات" to listOf("Notifications", "Notifications", "Notificaciones", "Уведомления", "Benachrichtigungen", "Bildirimler", "Notifikasi"),
+        "قراءة الكل" to listOf("Mark all read", "Tout lire", "Marcar todo leído", "Прочитать все", "Alle als gelesen", "Tümünü oku", "Tandai semua dibaca"),
+        "حذف المقروءة" to listOf("Delete read", "Supprimer lus", "Eliminar leídas", "Удалить прочитанные", "Gelesene löschen", "Okunanları sil", "Hapus yang dibaca"),
+        "لا توجد إشعارات حتى الآن." to listOf("No notifications yet.", "Aucune notification.", "Aún no hay notificaciones.", "Уведомлений пока нет.", "Noch keine Benachrichtigungen.", "Henüz bildirim yok.", "Belum ada notifikasi."),
+        "جديد" to listOf("New", "Nouveau", "Nuevo", "Новое", "Neu", "Yeni", "Baru"),
+        "مقروء" to listOf("Read", "Lu", "Leído", "Прочитано", "Gelesen", "Okundu", "Dibaca"),
+        "استلام المكافأة" to listOf("Claim reward", "Réclamer", "Reclamar premio", "Получить награду", "Belohnung abholen", "Ödülü al", "Klaim hadiah"),
+        "تحديد كمقروء" to listOf("Mark as read", "Marquer comme lu", "Marcar como leído", "Отметить прочитанным", "Als gelesen markieren", "Okundu işaretle", "Tandai dibaca"),
+        "تنبيه" to listOf("Notice", "Avis", "Aviso", "Уведомление", "Hinweis", "Uyarı", "Info"),
+        "ربط حساب Google Play" to listOf("Connect Google Play", "Associer Google Play", "Vincular Google Play", "Подключить Google Play", "Google Play verbinden", "Google Play'e bağlan", "Hubungkan Google Play"),
+        "ربط Google Play Games سيتاح بعد دمج الخدمة في تطبيق Android." to listOf("Google Play Games linking will be available after Android integration.", "La liaison Google Play Games sera disponible après l'intégration Android.", "La vinculación estará disponible tras la integración Android.", "Подключение станет доступно после интеграции Android.", "Die Verknüpfung folgt nach der Android-Integration.", "Android entegrasyonundan sonra kullanılabilir.", "Tersedia setelah integrasi Android.")
+    )
+    val index = when (language) { "en" -> 0; "fr" -> 1; "es" -> 2; "ru" -> 3; "de" -> 4; "tr" -> 5; "id" -> 6; else -> return arabic }
+    return translations[arabic]?.get(index) ?: arabic
 }
