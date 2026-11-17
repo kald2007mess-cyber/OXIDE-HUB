@@ -285,41 +285,69 @@ private fun OxideNativeApp(api: OxideApi) {
                     .padding(horizontal = 18.dp, vertical = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text("OXIDE HUB", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Black)
-                    Text("YOUR SPACE. YOUR REWARDS.", color = Cyan, fontSize = 10.sp, letterSpacing = 2.sp)
-                }
-                TextButton(onClick = { selected = 5 }) { Text("الدعم", color = Cyan, fontSize = 11.sp) }
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                TextButton(onClick = { selected = 5 }) { Text("◉", color = Cyan, fontSize = 16.sp) }
                 TextButton(onClick = { selected = 6 }) { Text("🔔", color = Cyan, fontSize = 16.sp) }
-                Surface(color = Color(0xFF15324B), shape = RoundedCornerShape(50)) {
-                    Text("● ONLINE", color = Cyan, modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp), fontSize = 11.sp)
+                TextButton(onClick = { selected = 5 }) { Text("🎧", color = Cyan, fontSize = 16.sp) }
+                Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
+                    Text("OXIDE HUB", color = Color.White, fontSize = 21.sp, fontWeight = FontWeight.Black)
+                    Text("SURVIVE • EXPLORE • DOMINATE", color = Cyan, fontSize = 8.sp, letterSpacing = 1.sp)
+                }
+            }
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = Color(0xCC0C1930),
+                shape = RoundedCornerShape(10.dp),
+                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF176CAA))
+            ) {
+                Row(Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    TextButton(onClick = {
+                        val id = profile?.optString("displayId", profile?.optString("userId", "")) ?: ""
+                        if (id.isNotBlank()) {
+                            val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                            clipboard.setPrimaryClip(android.content.ClipData.newPlainText("OXIDE ID", id))
+                            actionMessage = "تم نسخ رقم المستخدم"
+                        }
+                    }) { Text("نسخ", color = Cyan, fontSize = 11.sp) }
+                    Text(profile?.optString("displayId", profile?.optString("userId", "Loading...")) ?: "Loading...", color = Color.White, fontSize = 12.sp, modifier = Modifier.weight(1f))
+                    Text("رقم المستخدم الخاص بك", color = Muted, fontSize = 10.sp)
                 }
             }
 
-            NavigationBar(
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 5.dp)
-                                .border(1.dp, Color(0xFF176CAA), RoundedCornerShape(13.dp)),
-                            containerColor = Color(0xEB050F20),
-                            tonalElevation = 0.dp,
-                            windowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0)
+            Surface(
+                modifier = Modifier.fillMaxWidth().border(1.dp, Color(0xFF176CAA), RoundedCornerShape(13.dp)),
+                color = Color(0xEB050F20),
+                shape = RoundedCornerShape(13.dp),
+                tonalElevation = 0.dp
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(5.dp),
+                    horizontalArrangement = Arrangement.spacedBy(3.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    tabs.forEachIndexed { index, label ->
+                        val active = selected == index
+                        Surface(
+                            modifier = Modifier.weight(1f).height(68.dp),
+                            color = if (active) Color(0xFF075A9D) else Color.Transparent,
+                            shape = RoundedCornerShape(9.dp),
+                            border = if (active) androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF00AAFF)) else null
                         ) {
-                            tabs.forEachIndexed { index, label ->
-                                NavigationBarItem(
-                                    selected = selected == index,
-                                    onClick = { selected = index },
-                                    icon = { Text(icons[index], fontSize = 20.sp) },
-                                    label = { Text(label, fontSize = 9.sp, maxLines = 1) },
-                                    colors = androidx.compose.material3.NavigationBarItemDefaults.colors(
-                                        selectedIconColor = Color(0xFF8FE1FF),
-                                        selectedTextColor = Color(0xFF8FE1FF),
-                                        indicatorColor = Color(0xFF075A8E),
-                                        unselectedIconColor = Color(0xFFC6D5E7),
-                                        unselectedTextColor = Color(0xFFC6D5E7)
-                                    )
-                                )
+                            androidx.compose.foundation.clickable { selected = index }.let { click ->
+                                Column(
+                                    modifier = Modifier.fillMaxSize().then(click).padding(horizontal = 2.dp, vertical = 7.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Center
+                                ) {
+                                    Text(icons[index], fontSize = 21.sp, color = if (active) Color.White else Color(0xFFD6EAFF))
+                                    Text(label, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = if (active) Color.White else Color(0xFFC6D5E7), maxLines = 1)
+                                    if (index == 2) Text("🔒 SOON", fontSize = 7.sp, color = Color(0xFFFFD36B))
+                                }
                             }
                         }
+                    }
+                }
+            }
 
 
             when (selected) {
