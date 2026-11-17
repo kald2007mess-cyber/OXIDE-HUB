@@ -74,6 +74,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -223,6 +224,15 @@ private fun OxideNativeApp(api: OxideApi) {
                 sectionError = e.localizedMessage ?: "تعذر الاتصال بالخادم"
             } finally {
                 sectionLoading = false
+            }
+        }
+    }
+
+    LaunchedEffect(selected) {
+        if (selected == 5) {
+            while (true) {
+                delay(4000)
+                try { remoteData = api.get("/api/support/messages?after=0") } catch (_: Exception) { }
             }
         }
     }
