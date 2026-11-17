@@ -277,6 +277,7 @@ private fun OxideNativeApp(api: OxideApi) {
                         }
                     }
                     FeatureCard("ابدأ رحلتك", "اختر أحد الأقسام من الشريط السفلي للوصول إلى خدمات OXIDE HUB.")
+                    Button(onClick = { try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(OxideApi.BASE_URL + "/download.html"))) } catch (_: Exception) { error = "تعذر فتح مركز التنزيلات" } }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF15506B))) { Text("فتح مركز التنزيلات الرسمي") }
                     Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(20.dp)) {
                         Column(Modifier.fillMaxWidth().padding(17.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
                             Text("ربط حساب الموقع", color = Cyan, fontWeight = FontWeight.Bold, fontSize = 16.sp)
