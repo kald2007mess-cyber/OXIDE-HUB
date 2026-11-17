@@ -136,6 +136,8 @@ private fun OxideNativeApp(api: OxideApi) {
     var commentsPostId by remember { mutableStateOf(0) }
     var selectedMissionId by remember { mutableStateOf(0) }
     var proofUploading by remember { mutableStateOf(false) }
+    var maintenanceActive by remember { mutableStateOf(false) }
+    var maintenanceMessage by remember { mutableStateOf("نعتذر عن الإزعاج، الموقع تحت الصيانة حالياً. سنعود قريباً.") }
     var backgroundImage by remember { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
 
     fun refreshProfile() {
@@ -180,6 +182,11 @@ private fun OxideNativeApp(api: OxideApi) {
 
     LaunchedEffect(Unit) {
         refreshProfile()
+        try {
+            val maintenance = api.get("/api/maintenance")
+            maintenanceActive = maintenance.optBoolean("maintenance", false)
+            maintenanceMessage = maintenance.optString("message", maintenanceMessage)
+        } catch (_: Exception) { }
         backgroundImage = withContext(Dispatchers.IO) {
             try {
                 URL("https://kald2007mess-cyber-github-io.pages.dev/background.png").openStream().use {
@@ -386,7 +393,7 @@ private fun OxideNativeApp(api: OxideApi) {
                             border = if (active) androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF00AAFF)) else null
                         ) {
                             Column(
-                                modifier = Modifier.fillMaxSize().clickable { selected = index }.padding(horizontal = 2.dp, vertical = 7.dp),
+                                modifier = Modifier.fillMaxSize().clickable { if (!(maintenanceActive && index in listOf(0, 1, 3))) selected = index }.padding(horizontal = 2.dp, vertical = 7.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.Center
                             ) {
@@ -400,7 +407,9 @@ private fun OxideNativeApp(api: OxideApi) {
             }
 
 
-            when (selected) {
+            if (maintenanceActive && selected in listOf(0, 1, 3)) {
+                FeatureCard("🛠️ الموقع تحت الصيانة", maintenanceMessage)
+            } else when (selected) {
                 0 -> {
                     val progress = (progressData?.optInt("progress", 0) ?: 0).coerceIn(0, 3)
                     Card(colors = CardDefaults.cardColors(containerColor = Color(0xD90C1930)), shape = RoundedCornerShape(14.dp)) {
