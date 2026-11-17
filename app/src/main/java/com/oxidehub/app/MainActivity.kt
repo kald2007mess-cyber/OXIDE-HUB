@@ -1346,7 +1346,20 @@ private fun translateUiText(text: String, language: String): String {
         "تعذر تشغيل الفيديو. تحقق من اتصال الإنترنت أو صيغة الملف." to listOf("Could not play video. Check your connection or file format.","Lecture vidéo impossible. Vérifiez la connexion ou le format.","No se pudo reproducir el video. Comprueba la conexión o el formato.","Не удалось воспроизвести видео. Проверьте подключение или формат файла.","Video konnte nicht abgespielt werden. Prüfe Verbindung oder Dateiformat.","Video oynatılamadı. Bağlantınızı veya dosya biçimini kontrol edin.","Video tidak dapat diputar. Periksa koneksi atau format file."),
         "لم تتفاعل بعد" to listOf("No reaction yet","Aucune réaction","Aún no has reaccionado","Вы еще не отреагировали","Noch keine Reaktion","Henüz tepki vermediniz","Belum ada reaksi")
     )
-    return words[text]?.getOrNull(index) ?: text
+    val direct = words[text]?.getOrNull(index)
+    if (direct != null) return direct
+    val pairs = when (index) {
+        0 -> listOf("المشاهدات:" to "Views:", "التعليقات:" to "Comments:", "المكافأة:" to "Reward:", "الحالة:" to "Status:", "الرصيد:" to "Balance:", "الأصدقاء المدعوون:" to "Invited friends:", "النقاط المكتسبة من الإحالات:" to "Referral points:", "تفاعلك:" to "Your reaction:", "نقطة" to "points", "نقاط" to "points")
+        1 -> listOf("المشاهدات:" to "Vues :", "التعليقات:" to "Commentaires :", "المكافأة:" to "Récompense :", "الحالة:" to "Statut :", "الرصيد:" to "Solde :", "الأصدقاء المدعوون:" to "Amis invités :", "النقاط المكتسبة من الإحالات:" to "Points de parrainage :", "تفاعلك:" to "Votre réaction :", "نقطة" to "points", "نقاط" to "points")
+        2 -> listOf("المشاهدات:" to "Vistas:", "التعليقات:" to "Comentarios:", "المكافأة:" to "Recompensa:", "الحالة:" to "Estado:", "الرصيد:" to "Saldo:", "الأصدقاء المدعوون:" to "Amigos invitados:", "النقاط المكتسبة من الإحالات:" to "Puntos por referidos:", "تفاعلك:" to "Tu reacción:", "نقطة" to "puntos", "نقاط" to "puntos")
+        3 -> listOf("المشاهدات:" to "Просмотры:", "التعليقات:" to "Комментарии:", "المكافأة:" to "Награда:", "الحالة:" to "Статус:", "الرصيد:" to "Баланс:", "الأصدقاء المدعوون:" to "Приглашенные друзья:", "النقاط المكتسبة من الإحالات:" to "Очки за приглашения:", "تفاعلك:" to "Ваша реакция:", "نقطة" to "очков", "نقاط" to "очков")
+        4 -> listOf("المشاهدات:" to "Aufrufe:", "التعليقات:" to "Kommentare:", "المكافأة:" to "Belohnung:", "الحالة:" to "Status:", "الرصيد:" to "Guthaben:", "الأصدقاء المدعوون:" to "Eingeladene Freunde:", "النقاط المكتسبة من الإحالات:" to "Empfehlungspunkte:", "تفاعلك:" to "Deine Reaktion:", "نقطة" to "Punkte", "نقاط" to "Punkte")
+        5 -> listOf("المشاهدات:" to "Görüntüleme:", "التعليقات:" to "Yorumlar:", "المكافأة:" to "Ödül:", "الحالة:" to "Durum:", "الرصيد:" to "Bakiye:", "الأصدقاء المدعوون:" to "Davet edilen arkadaşlar:", "النقاط المكتسبة من الإحالات:" to "Davet puanları:", "تفاعلك:" to "Tepkiniz:", "نقطة" to "puan", "نقاط" to "puan")
+        else -> listOf("المشاهدات:" to "Dilihat:", "التعليقات:" to "Komentar:", "المكافأة:" to "Hadiah:", "الحالة:" to "Status:", "الرصيد:" to "Saldo:", "الأصدقاء المدعوون:" to "Teman yang diundang:", "النقاط المكتسبة من الإحالات:" to "Poin referral:", "تفاعلك:" to "Reaksi Anda:", "نقطة" to "poin", "نقاط" to "poin")
+    }
+    var result = text
+    for ((from, to) in pairs) result = result.replace(from, to)
+    return result
 }
 private fun oxideText(arabic: String, language: String): String {
     if (language == "ar") return arabic
