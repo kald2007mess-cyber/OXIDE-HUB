@@ -24,6 +24,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.net.URL
 import android.net.Uri
+import android.widget.VideoView
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -51,6 +52,14 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Redeem
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Group
+import androidx.compose.material.icons.filled.Article
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -119,7 +128,7 @@ private fun OxideNativeApp(api: OxideApi) {
     val preferences = remember { context.getSharedPreferences("oxide_native_settings", android.content.Context.MODE_PRIVATE) }
     var language by remember { mutableStateOf(preferences.getString("language", "ar") ?: "ar") }
     val tabs = listOf(oxideText("الرئيسية", language), oxideText("مكافأة", language), "VIP", oxideText("إحالة", language), oxideText("أخبار", language))
-    val icons = listOf("⌂", "🎁", "♛", "♧", "▤")
+    val icons = listOf(Icons.Filled.Home, Icons.Filled.Redeem, Icons.Filled.Star, Icons.Filled.Group, Icons.Filled.Article)
     val scope = rememberCoroutineScope()
     var selected by remember { mutableStateOf(0) }
     var loading by remember { mutableStateOf(true) }
@@ -442,7 +451,7 @@ private fun OxideNativeApp(api: OxideApi) {
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.Center
                             ) {
-                                Text(icons[index], fontSize = 21.sp, color = if (active) Color.White else Color(0xFFD6EAFF))
+                                Icon(imageVector = icons[index], contentDescription = label, modifier = Modifier.size(23.dp), tint = if (active) Color.White else Color(0xFFD6EAFF))
                                 Text(label, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = if (active) Color.White else Color(0xFFC6D5E7), maxLines = 1)
                                 if (index == 2) Text("🔒 SOON", fontSize = 7.sp, color = Color(0xFFFFD36B))
                             }
@@ -474,7 +483,7 @@ private fun OxideNativeApp(api: OxideApi) {
                     }
                     Text("UNLOCK YOUR DOWNLOAD", color = Cyan, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     for (stage in 1..3) {
-                        Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(13.dp)) {
+                        Card(colors = CardDefaults.cardColors(containerColor = Color(0xB810243D)), shape = RoundedCornerShape(13.dp)) {
                             Row(Modifier.fillMaxWidth().padding(15.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                                 Text("المرحلة $stage/3", color = Color.White, fontWeight = FontWeight.Bold)
                                 Text("🔒 SOON", color = Muted, fontSize = 12.sp, fontWeight = FontWeight.Bold)
@@ -484,8 +493,8 @@ private fun OxideNativeApp(api: OxideApi) {
                     Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(14.dp)) {
                         Column(Modifier.fillMaxWidth().padding(14.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
                             Text("منصات التحميل", color = Cyan, fontWeight = FontWeight.Bold)
-                            Button(onClick = { try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(OxideApi.BASE_URL + "/download.html"))) } catch (_: Exception) { error = "تعذر فتح صفحة Android" } }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF087F9B))) { Text("🤖 تحميل ANDROID") }
-                            Button(onClick = { try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(OxideApi.BASE_URL + "/ios.html"))) } catch (_: Exception) { error = "تعذر فتح صفحة iOS" } }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF15506B))) { Text(" تحميل iOS") }
+                            Button(onClick = { try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(OxideApi.BASE_URL + "/download.html"))) } catch (_: Exception) { error = "تعذر فتح صفحة Android" } }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = Color(0xD9087F9B))) { Text("🤖 تحميل ANDROID") }
+                            Button(onClick = { try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(OxideApi.BASE_URL + "/ios.html"))) } catch (_: Exception) { error = "تعذر فتح صفحة iOS" } }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = Color(0xD915506B))) { Text(" تحميل iOS") }
                             Button(onClick = { try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(OxideApi.BASE_URL + "/beta.html"))) } catch (_: Exception) { error = "تعذر فتح صفحة Beta" } }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF15506B))) { Text("🧪 BETA") }
                         }
                     }
@@ -508,51 +517,7 @@ private fun OxideNativeApp(api: OxideApi) {
                             }
                         }
                     }
-                    Text("مرحباً بك في OXIDE HUB", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                    Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(22.dp)) {
-                        Column(Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                            Text("رصيد نقاطك", color = Muted, fontSize = 13.sp)
-                            val points = profile?.opt("points")?.toString() ?: "—"
-                            Text(points, color = Cyan, fontSize = 38.sp, fontWeight = FontWeight.ExtraBold)
-                            Text("الرصيد يُقرأ مباشرة من قاعدة بيانات الموقع", color = Muted, fontSize = 11.sp)
-                        }
-                    }
-                    Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(22.dp)) {
-                        Column(Modifier.fillMaxWidth().padding(18.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text("حالة الحساب", color = Color.White, fontWeight = FontWeight.Bold)
-                            Text(profile?.optString("displayId", "لم يتم تأكيد الحساب") ?: "جارٍ تحميل الحساب", color = Muted)
-                            if (loading) CircularProgressIndicator(modifier = Modifier.size(22.dp), color = Cyan, strokeWidth = 2.dp)
-                            error?.let { Text(it, color = Color(0xFFFF9A9A), fontSize = 12.sp) }
-                            Button(onClick = { refreshProfile() }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF087F9B))) {
-                                Text("تحديث بيانات الحساب")
-                            }
-                        }
-                    }
-                    FeatureCard("ابدأ رحلتك", "اختر أحد الأقسام من الشريط السفلي للوصول إلى خدمات OXIDE HUB.")
-                    Button(onClick = { try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(OxideApi.BASE_URL + "/download.html"))) } catch (_: Exception) { error = "تعذر فتح مركز التنزيلات" } }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF15506B))) { Text("فتح مركز التنزيلات الرسمي") }
-                    Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(20.dp)) {
-                        Column(Modifier.fillMaxWidth().padding(17.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
-                            Text("ربط حساب الموقع", color = Cyan, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                            Text("افتح الرابط في المتصفح الذي تستخدم فيه حساب OXIDE HUB، انسخ رمز الربط ثم الصقه هنا. الرمز صالح لمدة 5 دقائق ويُستخدم مرة واحدة.", color = Muted, fontSize = 12.sp)
-                            OutlinedField(value = linkCode, onValueChange = { linkCode = it }, label = "رمز الربط المكوّن من 32 حرفاً")
-                            Button(
-                                onClick = {
-                                    try {
-                                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(OxideApi.BASE_URL + "/api/native-link")))
-                                    } catch (_: Exception) {
-                                        error = "تعذر فتح المتصفح"
-                                    }
-                                },
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF15506B))
-                            ) { Text("فتح صفحة إنشاء الرمز") }
-                            Button(
-                                onClick = { if (linkCode.isBlank()) error = "أدخل رمز الربط أولاً" else linkNativeAccount() },
-                                enabled = !loading && linkCode.trim().length == 32,
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF087F9B))
-                            ) { Text("ربط الحساب الآن") }
-                            error?.let { Text(it, color = Color(0xFFFF9A9A), fontSize = 12.sp) }
-                        }
-                    }
+                    // Home page intentionally ends after the Usage Guide.
                 }
                 1 -> {
                     Text("🎁 OXIDE ISLAND", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
@@ -604,38 +569,65 @@ private fun OxideNativeApp(api: OxideApi) {
                         if (offers == null || offers.length() == 0) {
                             if (!sectionLoading) FeatureCard("لا توجد عروض", "تعذر تحميل عروض الاستبدال.")
                         } else {
-                            for (i in 0 until offers.length()) {
-                                val offer = offers.optJSONObject(i) ?: continue
-                                val offerId = offer.optInt("id")
-                                val cost = offer.optInt("points")
-                                Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(18.dp)) {
-                                    Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                        RewardImage(offerId)
-                                        Text(offer.optString("name"), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 17.sp)
-                                        Text("$cost نقطة", color = Cyan)
-                                        Button(onClick = {
-                                            selectedOfferId = offerId
-                                            selectedOfferName = offer.optString("name")
-                                            selectedOfferCost = cost
-                                            sectionError = null
-                                        }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF087F9B))) { Text("استبدال") }
+                            for (rowStart in 0 until offers.length() step 2) {
+                                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.Top) {
+                                    for (i in rowStart until minOf(rowStart + 2, offers.length())) {
+                                        val offer = offers.optJSONObject(i) ?: continue
+                                        val offerId = offer.optInt("id")
+                                        val cost = offer.optInt("points")
+                                        Card(
+                                            modifier = Modifier.weight(1f),
+                                            colors = CardDefaults.cardColors(containerColor = Color(0xB810243D)),
+                                            shape = RoundedCornerShape(18.dp),
+                                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0x66168BD0))
+                                        ) {
+                                            Column(Modifier.fillMaxWidth().padding(10.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
+                                                RewardImage(offerId)
+                                                Text(offer.optString("name"), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                                Text("$cost نقطة", color = Cyan, fontSize = 12.sp)
+                                                Button(
+                                                    onClick = {
+                                                        selectedOfferId = offerId
+                                                        selectedOfferName = offer.optString("name")
+                                                        selectedOfferCost = cost
+                                                        sectionError = null
+                                                    },
+                                                    modifier = Modifier.fillMaxWidth(),
+                                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xD9087F9B))
+                                                ) { Text("استبدال", fontSize = 12.sp) }
+                                            }
+                                        }
                                     }
+                                    if (rowStart + 1 >= offers.length()) Spacer(Modifier.weight(1f))
                                 }
                             }
                             if (selectedOfferId > 0) {
-                                Card(colors = CardDefaults.cardColors(containerColor = Color(0xFF0B1B30)), shape = RoundedCornerShape(12.dp)) {
-                                    Column(Modifier.fillMaxWidth().padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                        Text("تأكيد استبدال $selectedOfferName مقابل $selectedOfferCost نقطة", color = Cyan, fontWeight = FontWeight.Bold)
-                                        OutlinedField(value = uuidDraft, onValueChange = { uuidDraft = it }, label = "OX-XXXXXXXX أو UUID كامل")
-                                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                            Button(onClick = {
-                                                if (uuidDraft.isBlank()) sectionError = "أدخل UUID الخاص بحسابك أولاً."
-                                                else {
-                                                    sendPost("/api/rewards", JSONObject().put("offerId", selectedOfferId).put("userUuid", uuidDraft.trim()), "تم تسجيل طلبك وإرساله للإدارة. الحالة: قيد المعالجة.")
-                                                    selectedOfferId = 0
-                                                }
-                                            }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF087F9B))) { Text("تأكيد الطلب") }
-                                            TextButton(onClick = { selectedOfferId = 0 }) { Text("إلغاء", color = Muted) }
+                                Dialog(onDismissRequest = { selectedOfferId = 0 }) {
+                                    Surface(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        color = Color(0xD90B1B30),
+                                        shape = RoundedCornerShape(20.dp),
+                                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xAA168BD0))
+                                    ) {
+                                        Column(Modifier.fillMaxWidth().padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                                            Text("طلب استبدال النقاط", color = Cyan, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                                            Text("$selectedOfferName • $selectedOfferCost نقطة", color = Color.White, fontWeight = FontWeight.SemiBold)
+                                            Text("أضف UUID الخاص بك لإكمال طلب الاستبدال.", color = Muted, fontSize = 12.sp)
+                                            OutlinedField(value = uuidDraft, onValueChange = { uuidDraft = it }, label = "أدخل UUID الخاص بك")
+                                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                                Button(
+                                                    modifier = Modifier.weight(1f),
+                                                    onClick = {
+                                                        if (uuidDraft.isBlank()) sectionError = "أدخل UUID الخاص بحسابك أولاً."
+                                                        else {
+                                                            sendPost("/api/rewards", JSONObject().put("offerId", selectedOfferId).put("userUuid", uuidDraft.trim()), "تم تسجيل طلبك وإرساله للإدارة. الحالة: قيد المعالجة.")
+                                                            selectedOfferId = 0
+                                                        }
+                                                    },
+                                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xD9087F9B))
+                                                ) { Text("تأكيد الطلب") }
+                                                TextButton(onClick = { selectedOfferId = 0 }) { Text("إلغاء", color = Muted) }
+                                            }
                                         }
                                     }
                                 }
@@ -956,7 +948,7 @@ private fun OxideRainOverlay() {
             val x = (i * 83.17f + 19f) % w
             val y = (i * 137.31f + t * 0.55f) % h
             val radius = 0.45f + (i % 4) * 0.22f
-            val alpha = 0.10f + (i % 5) * 0.025f
+            val alpha = 0.16f + (i % 5) * 0.035f
             drawCircle(
                 color = Color(0xFFB9DFFF).copy(alpha = alpha),
                 radius = radius,
@@ -965,7 +957,7 @@ private fun OxideRainOverlay() {
         }
 
         // Fine rain streaks falling diagonally, matching the website's speed and density.
-        val rainCount = (w * h / 3000f).toInt().coerceIn(100, 440)
+        val rainCount = (w * h / 3000f).toInt().coerceIn(150, 520)
         for (i in 0 until rainCount) {
             val seed = i.toFloat()
             val xStart = ((seed * 47.7f) % (w + 35f))
@@ -979,7 +971,7 @@ private fun OxideRainOverlay() {
                     colors = listOf(
                         Color(0xFFCCEBFF).copy(alpha = 0f),
                         Color(0xFFC2E7FF).copy(alpha = 0.10f + (i % 5) * 0.025f),
-                        Color(0xFFEBF8FF).copy(alpha = 0.16f + (i % 5) * 0.04f)
+                        Color(0xFFEBF8FF).copy(alpha = 0.24f + (i % 5) * 0.045f)
                     ),
                     startY = y - length,
                     endY = y
@@ -1132,9 +1124,20 @@ private fun NewsCard(
         Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(post.optString("title"), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
             if (post.optString("media_type") == "video") {
-                Button(onClick = {
-                    try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(OxideApi.BASE_URL + "/api/news/media?id=" + post.optInt("id")))) } catch (_: Exception) {}
-                }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF15506B))) { Text("▶ تشغيل الفيديو") }
+                AndroidView(
+                    modifier = Modifier.fillMaxWidth().height(210.dp),
+                    factory = { viewContext ->
+                        VideoView(viewContext).apply {
+                            setVideoURI(Uri.parse(OxideApi.BASE_URL + "/api/news/media?id=" + post.optInt("id")))
+                            setOnPreparedListener { player ->
+                                player.isLooping = true
+                                player.setVolume(0f, 0f)
+                                start()
+                            }
+                        }
+                    },
+                    update = { player -> if (!player.isPlaying) player.start() }
+                )
             } else if (mediaBitmap != null) {
                 Image(bitmap = mediaBitmap!!, contentDescription = post.optString("title"), modifier = Modifier.fillMaxWidth().height(180.dp), contentScale = ContentScale.Crop)
             }
