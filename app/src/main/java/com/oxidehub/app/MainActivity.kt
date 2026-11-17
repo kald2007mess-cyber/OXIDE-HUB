@@ -77,6 +77,7 @@ import androidx.compose.material.icons.filled.ThumbDown
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -747,7 +748,7 @@ private fun OxideNativeApp(api: OxideApi) {
                                         }
                                         try { context.startActivity(Intent.createChooser(share, "مشاركة رابط الدعوة")) } catch (_: Exception) { sectionError = "تعذرت مشاركة الرابط" }
                                     }
-                                }, enabled = inviteLink.isNotBlank(), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF15506B))) { Text("↗ مشاركة") }
+                                }, enabled = inviteLink.isNotBlank(), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF15506B))) { Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) { Icon(Icons.Filled.Share, contentDescription = null, modifier = Modifier.size(16.dp)); Text("مشاركة") } }
                             }
                             Text("الأصدقاء المدعوون: ${user?.optInt("referrals", 0) ?: 0}", color = Color.White)
                             Text("النقاط المكتسبة من الإحالات: ${user?.optInt("earned", 0) ?: 0}", color = Muted)
@@ -805,7 +806,7 @@ private fun OxideNativeApp(api: OxideApi) {
                     }
                 }
                 6 -> {
-                    TextButton(onClick = { selected = 0 }) { Text("⬅ إغلاق الإشعارات", color = Cyan) }
+                    TextButton(onClick = { selected = 0 }) { Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) { Icon(Icons.Filled.ArrowBack, contentDescription = null, tint = Cyan); Text("إغلاق الإشعارات", color = Cyan) } }
                     Text("الإشعارات", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
                     val notifications = remoteData?.optJSONArray("notifications")
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -837,7 +838,7 @@ private fun OxideNativeApp(api: OxideApi) {
                     }
                 }
                 5 -> {
-                    TextButton(onClick = { selected = 0 }) { Text("⬅ العودة للرئيسية", color = Cyan) }
+                    TextButton(onClick = { selected = 0 }) { Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) { Icon(Icons.Filled.ArrowBack, contentDescription = null, tint = Cyan); Text("العودة للرئيسية", color = Cyan) } }
                     Text("الدعم والمحادثات", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
                     val messages = remoteData?.optJSONArray("messages")
                     if (messages == null || messages.length() == 0) {
