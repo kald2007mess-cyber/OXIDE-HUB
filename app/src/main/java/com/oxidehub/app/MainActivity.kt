@@ -634,6 +634,9 @@ private fun OxideNativeApp(api: OxideApi) {
                                 post = post,
                                 comment = commentDraft,
                                 comments = if (commentsPostId == post.optInt("id")) commentsData?.optJSONArray("comments") else null,
+                                onView = {
+                                    scope.launch { try { api.post("/api/news", JSONObject().put("action", "view").put("postId", post.optInt("id"))) } catch (_: Exception) {} }
+                                },
                                 onLoadComments = {
                                     scope.launch {
                                         try {
@@ -884,14 +887,36 @@ private fun NewsCard(
     post: JSONObject,
     comment: String,
     comments: JSONArray?,
+    onView: () -> Unit,
     onLoadComments: () -> Unit,
     onCommentChange: (String) -> Unit,
     onReaction: (String) -> Unit,
     onComment: () -> Unit
 ) {
+    var mediaBitmap by remember(post.optInt("id")) { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
+    val context = LocalContext.current
+    LaunchedEffect(post.optInt("id")) {
+        onView()
+        if (post.optString("media_type") != "video") {
+            mediaBitmap = withContext(Dispatchers.IO) {
+                try {
+                    URL(OxideApi.BASE_URL + "/api/news/media?id=" + post.optInt("id")).openStream().use {
+                        BitmapFactory.decodeStream(it)?.asImageBitmap()
+                    }
+                } catch (_: Exception) { null }
+            }
+        }
+    }
     Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(18.dp)) {
         Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(post.optString("title"), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            if (post.optString("media_type") == "video") {
+                Button(onClick = {
+                    try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(OxideApi.BASE_URL + "/api/news/media?id=" + post.optInt("id")))) } catch (_: Exception) {}
+                }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF15506B))) { Text("▶ تشغيل الفيديو") }
+            } else if (mediaBitmap != null) {
+                Image(bitmap = mediaBitmap!!, contentDescription = post.optString("title"), modifier = Modifier.fillMaxWidth().height(180.dp), contentScale = ContentScale.Crop)
+            }
             Text("المشاهدات: ${post.optInt("views")} • التعليقات: ${post.optInt("comments_count")}", color = Muted, fontSize = 11.sp)
             Text("❤️ ${post.optInt("heart_count")}   👍 ${post.optInt("like_count")}   😡 ${post.optInt("angry_count")}   🥺 ${post.optInt("sad_count")}   👎 ${post.optInt("dislike_count")}", color = Cyan)
             Text("تفاعلك: ${post.optString("my_reaction", "لم تتفاعل بعد")}", color = Muted, fontSize = 11.sp)
