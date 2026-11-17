@@ -131,6 +131,7 @@ private fun OxideNativeApp(api: OxideApi) {
     var progressData by remember { mutableStateOf<JSONObject?>(null) }
     var settingsExpanded by remember { mutableStateOf(false) }
     var islandTab by remember { mutableStateOf(0) }
+    var islandRemainingSeconds by remember { mutableStateOf(0) }
     var commentsData by remember { mutableStateOf<JSONObject?>(null) }
     var commentsPostId by remember { mutableStateOf(0) }
     var selectedMissionId by remember { mutableStateOf(0) }
@@ -212,6 +213,7 @@ private fun OxideNativeApp(api: OxideApi) {
                 if (selected == 1) {
                     orderData = api.get("/api/reward-orders")
                     islandData = api.get("/api/reward-ptc")
+                    islandRemainingSeconds = islandData?.optInt("remainingSeconds", 0) ?: 0
                     val missionData = api.get("/api/missions/status")
                     remoteData?.put("nativeMissions", missionData.optJSONArray("missions") ?: JSONArray())
                     remoteData?.put("completedMissions", missionData.optInt("completedMissions", 0))
@@ -223,6 +225,21 @@ private fun OxideNativeApp(api: OxideApi) {
                 sectionError = e.localizedMessage ?: "تعذر الاتصال بالخادم"
             } finally {
                 sectionLoading = false
+            }
+        }
+    }
+
+    LaunchedEffect(selected) {
+        if (selected == 1) {
+            while (true) {
+                delay(1000)
+                if (islandRemainingSeconds > 0) islandRemainingSeconds--
+                else {
+                    try {
+                        islandData = api.get("/api/reward-ptc")
+                        islandRemainingSeconds = islandData?.optInt("remainingSeconds", 0) ?: 0
+                    } catch (_: Exception) { }
+                }
             }
         }
     }
@@ -520,6 +537,10 @@ private fun OxideNativeApp(api: OxideApi) {
                                     trackColor = Color(0xFF244765)
                                 )
                                 Text("المكافأة: ${islandData?.optInt("pointsPerAd", 5) ?: 5} نقاط لكل إعلان", color = Muted, fontSize = 12.sp)
+                                val hours = islandRemainingSeconds / 3600
+                                val minutes = (islandRemainingSeconds % 3600) / 60
+                                val seconds = islandRemainingSeconds % 60
+                                Text("الوقت المتبقي للدورة: %02d:%02d:%02d".format(hours, minutes, seconds), color = Muted, fontSize = 12.sp)
                                 Button(onClick = { actionMessage = "🔒 SOON — مشاهدة الإعلانات غير متاحة حاليًا." }, enabled = false, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(disabledContainerColor = Color(0xFF244765))) { Text("🔒 مشاهدة الإعلانات — SOON") }
                                 Text("مشاهدة الإعلانات غير متاحة حاليًا، كما في الموقع الأصلي.", color = Muted, fontSize = 11.sp)
                             }
