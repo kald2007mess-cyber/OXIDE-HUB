@@ -1176,8 +1176,7 @@ private fun RewardImage(offerId: Int) {
 }
 
 @Composable
-private fun MissionCard(
-                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0x557DEBFF)),item: JSONObject, onOpen: (String) -> Unit, onPickProof: () -> Unit) {
+private fun MissionCard(item: JSONObject, onOpen: (String) -> Unit, onPickProof: () -> Unit) {
     val status = item.optString("status", "not_submitted")
     val statusText = when (status) {
         "approved" -> "مكتملة"
@@ -1208,7 +1207,6 @@ private fun MissionCard(
 
 @Composable
 private fun NewsCard(
-                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0x557DEBFF)),
     post: JSONObject,
     comment: String,
     comments: JSONArray?,
@@ -1360,8 +1358,7 @@ private fun OutlinedField(value: String, onValueChange: (String) -> Unit, label:
 }
 
 @Composable
-private fun FeatureCard(
-                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0x557DEBFF)),title: String, description: String) {
+private fun FeatureCard(title: String, description: String) {
     Card(
                 border = androidx.compose.foundation.BorderStroke(1.dp, Color(0x557DEBFF)),colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(18.dp)) {
         Column(Modifier.fillMaxWidth().padding(17.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
