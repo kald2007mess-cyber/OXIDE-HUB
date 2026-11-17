@@ -60,6 +60,20 @@ import androidx.compose.material.icons.filled.Redeem
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Article
+import androidx.compose.material.icons.filled.Android
+import androidx.compose.material.icons.filled.PhoneIphone
+import androidx.compose.material.icons.filled.Science
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.HeadsetMic
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.SentimentDissatisfied
+import androidx.compose.material.icons.filled.ThumbUp
+import androidx.compose.material.icons.filled.ThumbDown
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -361,7 +375,6 @@ private fun OxideNativeApp(api: OxideApi) {
                     Brush.verticalGradient(listOf(Color(0xAD030816), Color(0xE0030816)))
                 )
             )
-            OxideRainOverlay()
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -372,7 +385,7 @@ private fun OxideNativeApp(api: OxideApi) {
             ) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 Box {
-                    TextButton(onClick = { notificationsOpen = true }) { Text("🔔", color = Cyan, fontSize = 17.sp) }
+                    TextButton(onClick = { notificationsOpen = true }) { Icon(Icons.Filled.Notifications, contentDescription = "Notifications", tint = Cyan) }
                     val unreadCount = notificationData?.optJSONArray("notifications")?.let { array ->
                         (0 until array.length()).count { index -> array.optJSONObject(index)?.isNull("read_at") == true }
                     } ?: 0
@@ -381,7 +394,7 @@ private fun OxideNativeApp(api: OxideApi) {
                     }
                 }
                 Box {
-                    TextButton(onClick = { languageExpanded = true }) { Text("🌐", color = Cyan, fontSize = 17.sp) }
+                    TextButton(onClick = { languageExpanded = true }) { Icon(Icons.Filled.Language, contentDescription = "Language", tint = Cyan) }
                     DropdownMenu(expanded = languageExpanded, onDismissRequest = { languageExpanded = false }) {
                         listOf("ar" to "العربية", "en" to "English", "fr" to "Français", "es" to "Español", "ru" to "Русский", "de" to "Deutsch", "tr" to "Türkçe", "id" to "Bahasa Indonesia").forEach { (code, label) ->
                             DropdownMenuItem(text = { Text(if (language == code) "✓ $label" else label) }, onClick = {
@@ -393,7 +406,7 @@ private fun OxideNativeApp(api: OxideApi) {
                     }
                 }
                 Box {
-                    TextButton(onClick = { settingsExpanded = true }) { Text("⚙️", color = Cyan, fontSize = 17.sp) }
+                    TextButton(onClick = { settingsExpanded = true }) { Icon(Icons.Filled.Settings, contentDescription = "Settings", tint = Cyan) }
                     DropdownMenu(expanded = settingsExpanded, onDismissRequest = { settingsExpanded = false }) {
                         DropdownMenuItem(text = { Text(oxideText("ربط حساب Google Play", language)) }, onClick = {
                             settingsExpanded = false
@@ -401,7 +414,7 @@ private fun OxideNativeApp(api: OxideApi) {
                         })
                     }
                 }
-                TextButton(onClick = { selected = 5 }) { Text("🎧", color = Cyan, fontSize = 17.sp) }
+                TextButton(onClick = { selected = 5 }) { Icon(Icons.Filled.HeadsetMic, contentDescription = "Support", tint = Cyan) }
                 Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
                     Text("OXIDE HUB", color = Color.White, fontSize = 21.sp, fontWeight = FontWeight.Black)
                     Text("SURVIVE • EXPLORE • DOMINATE", color = Cyan, fontSize = 8.sp, letterSpacing = 1.sp)
@@ -486,16 +499,18 @@ private fun OxideNativeApp(api: OxideApi) {
                         Card(colors = CardDefaults.cardColors(containerColor = Color(0xB810243D)), shape = RoundedCornerShape(13.dp)) {
                             Row(Modifier.fillMaxWidth().padding(15.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                                 Text("المرحلة $stage/3", color = Color.White, fontWeight = FontWeight.Bold)
-                                Text("🔒 SOON", color = Muted, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) { Icon(Icons.Filled.Lock, contentDescription = null, tint = Muted, modifier = Modifier.size(14.dp)); Text("SOON", color = Muted, fontSize = 12.sp, fontWeight = FontWeight.Bold) }
                             }
                         }
                     }
                     Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(14.dp)) {
                         Column(Modifier.fillMaxWidth().padding(14.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
                             Text("منصات التحميل", color = Cyan, fontWeight = FontWeight.Bold)
-                            Button(onClick = { try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(OxideApi.BASE_URL + "/download.html"))) } catch (_: Exception) { error = "تعذر فتح صفحة Android" } }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = Color(0xD9087F9B))) { Text("🤖 تحميل ANDROID") }
-                            Button(onClick = { try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(OxideApi.BASE_URL + "/ios.html"))) } catch (_: Exception) { error = "تعذر فتح صفحة iOS" } }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = Color(0xD915506B))) { Text(" تحميل iOS") }
-                            Button(onClick = { try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(OxideApi.BASE_URL + "/beta.html"))) } catch (_: Exception) { error = "تعذر فتح صفحة Beta" } }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF15506B))) { Text("🧪 BETA") }
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                                Button(onClick = { try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(OxideApi.BASE_URL + "/download.html"))) } catch (_: Exception) { error = "تعذر فتح صفحة Android" } }, modifier = Modifier.weight(1f), contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 4.dp, vertical = 10.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0xD9087F9B))) { Icon(Icons.Filled.Android, contentDescription = "Android", modifier = Modifier.size(17.dp)); Spacer(Modifier.size(4.dp)); Text("Android", fontSize = 10.sp, maxLines = 1) }
+                                Button(onClick = { try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(OxideApi.BASE_URL + "/ios.html"))) } catch (_: Exception) { error = "تعذر فتح صفحة iOS" } }, modifier = Modifier.weight(1f), contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 4.dp, vertical = 10.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0xD915506B))) { Icon(Icons.Filled.PhoneIphone, contentDescription = "iOS", modifier = Modifier.size(17.dp)); Spacer(Modifier.size(4.dp)); Text("iOS", fontSize = 10.sp, maxLines = 1) }
+                                Button(onClick = { try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(OxideApi.BASE_URL + "/beta.html"))) } catch (_: Exception) { error = "تعذر فتح صفحة Beta" } }, modifier = Modifier.weight(1f), contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 4.dp, vertical = 10.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF15506B))) { Icon(Icons.Filled.Science, contentDescription = "Beta", modifier = Modifier.size(17.dp)); Spacer(Modifier.size(4.dp)); Text("Beta", fontSize = 10.sp, maxLines = 1) }
+                            }
                         }
                     }
                     Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(14.dp)) {
@@ -851,6 +866,7 @@ private fun OxideNativeApp(api: OxideApi) {
             Spacer(Modifier.height(4.dp))
             Text("OXIDE HUB • Android Native", color = Muted, fontSize = 10.sp)
             }
+            OxideRainOverlay()
             if (notificationsOpen) {
                 Dialog(onDismissRequest = { notificationsOpen = false }) {
                     Surface(
