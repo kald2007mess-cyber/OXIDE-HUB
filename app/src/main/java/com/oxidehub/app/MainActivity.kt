@@ -113,11 +113,65 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 private val Space = Color(0xFF071426)
-private val Panel = Color(0xFF10243D)
+private val Panel = Color(0x75152F4B)
 private val Cyan = Color(0xFF42D9F5)
 private val Muted = Color(0xFF9BB0C8)
 private val Green = Color(0xFF65D6A5)
 private val LocalOxideLanguage = compositionLocalOf { "ar" }
+
+@Composable
+private fun PlatformVectorIcon(kind: String, modifier: Modifier = Modifier) {
+    Canvas(modifier) {
+        val sx = size.width / 28f
+        val sy = size.height / 28f
+        fun p(x: Float, y: Float) = Offset(x * sx, y * sy)
+        val white = Color.White
+        when (kind) {
+            "android" -> {
+                drawLine(white, p(8f, 7f), p(5f, 3f), 1.5f * sx, cap = StrokeCap.Round)
+                drawLine(white, p(20f, 7f), p(23f, 3f), 1.5f * sx, cap = StrokeCap.Round)
+                drawRoundRect(white, topLeft = p(5f, 7f), size = androidx.compose.ui.geometry.Size(18f*sx, 12f*sy), cornerRadius = androidx.compose.ui.geometry.CornerRadius(6f*sx, 6f*sy))
+                drawRect(white, topLeft = p(5f, 13f), size = androidx.compose.ui.geometry.Size(18f*sx, 6f*sy))
+                drawRoundRect(white, topLeft = p(6f, 17f), size = androidx.compose.ui.geometry.Size(4f*sx, 8f*sy), cornerRadius = androidx.compose.ui.geometry.CornerRadius(2f*sx,2f*sy))
+                drawRoundRect(white, topLeft = p(18f, 17f), size = androidx.compose.ui.geometry.Size(4f*sx, 8f*sy), cornerRadius = androidx.compose.ui.geometry.CornerRadius(2f*sx,2f*sy))
+                drawCircle(Color(0xFF15364A), 1f*sx, p(10f, 11f))
+                drawCircle(Color(0xFF15364A), 1f*sx, p(18f, 11f))
+            }
+            "apple" -> {
+                val path = androidx.compose.ui.graphics.Path().apply {
+                    moveTo(15f*sx, 8f*sy)
+                    cubicTo(12f*sx, 5f*sy, 7f*sx, 7f*sy, 6f*sx, 12f*sy)
+                    cubicTo(5f*sx, 17f*sy, 9f*sx, 24f*sy, 12f*sx, 24f*sy)
+                    cubicTo(14f*sx, 24f*sy, 14f*sx, 22f*sy, 17f*sx, 22f*sy)
+                    cubicTo(20f*sx, 22f*sy, 20f*sx, 24f*sy, 22f*sx, 23f*sy)
+                    cubicTo(25f*sx, 20f*sy, 27f*sx, 15f*sy, 24f*sx, 12f*sy)
+                    cubicTo(22f*sx, 10f*sy, 19f*sx, 9f*sy, 15f*sx, 12f*sy)
+                    close()
+                }
+                drawPath(path, white)
+                val leaf = androidx.compose.ui.graphics.Path().apply {
+                    moveTo(15f*sx, 7f*sy)
+                    cubicTo(15f*sx, 3f*sy, 19f*sx, 2f*sy, 21f*sx, 2f*sy)
+                    cubicTo(21f*sx, 6f*sy, 18f*sx, 8f*sy, 15f*sx, 8f*sy)
+                    close()
+                }
+                drawPath(leaf, white)
+            }
+            else -> {
+                val path = androidx.compose.ui.graphics.Path().apply {
+                    moveTo(9f*sx, 3f*sy); lineTo(19f*sx, 3f*sy)
+                    moveTo(12f*sx, 3f*sy); lineTo(12f*sx, 11f*sy)
+                    lineTo(6f*sx, 22f*sy); quadraticTo(5f*sx, 25f*sy, 9f*sx, 25f*sy)
+                    lineTo(19f*sx, 25f*sy); quadraticTo(23f*sx, 25f*sy, 22f*sx, 22f*sy)
+                    lineTo(16f*sx, 11f*sy); lineTo(16f*sx, 3f*sy)
+                }
+                drawPath(path, white, style = Stroke(width = 2f*sx, cap = StrokeCap.Round, join = androidx.compose.ui.graphics.StrokeJoin.Round))
+                drawLine(Color(0xFF8FEAFF), p(8f, 19f), p(20f, 19f), 2f*sx, cap = StrokeCap.Round)
+                drawCircle(Color(0xFF8FEAFF), 1.2f*sx, p(14f, 15f))
+            }
+        }
+    }
+}
 
 @Composable
 private fun Text(text: String, modifier: Modifier = Modifier, color: Color = Color.Unspecified, fontSize: TextUnit = TextUnit.Unspecified, fontWeight: FontWeight? = null, letterSpacing: TextUnit = TextUnit.Unspecified, lineHeight: TextUnit = TextUnit.Unspecified, maxLines: Int = Int.MAX_VALUE) {
@@ -494,7 +548,7 @@ private fun OxideNativeApp(api: OxideApi) {
             } else when (selected) {
                 0 -> {
                     val progress = (progressData?.optInt("progress", 0) ?: 0).coerceIn(0, 3)
-                    Card(colors = CardDefaults.cardColors(containerColor = Color(0xD90C1930)), shape = RoundedCornerShape(14.dp)) {
+                    Card(colors = CardDefaults.cardColors(containerColor = Color(0x75152F4B)), shape = RoundedCornerShape(14.dp)) {
                         Column(Modifier.fillMaxWidth().padding(15.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                                 Column {
@@ -511,7 +565,7 @@ private fun OxideNativeApp(api: OxideApi) {
                     }
                     Text("UNLOCK YOUR DOWNLOAD", color = Cyan, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     for (stage in 1..3) {
-                        Card(colors = CardDefaults.cardColors(containerColor = Color(0xB810243D)), shape = RoundedCornerShape(13.dp)) {
+                        Card(colors = CardDefaults.cardColors(containerColor = Color(0x75152F4B)), shape = RoundedCornerShape(13.dp)) {
                             Row(Modifier.fillMaxWidth().padding(15.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                                 Text("المرحلة $stage/3", color = Color.White, fontWeight = FontWeight.Bold)
                                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) { Icon(Icons.Filled.Lock, contentDescription = null, tint = Muted, modifier = Modifier.size(14.dp)); Text("SOON", color = Muted, fontSize = 12.sp, fontWeight = FontWeight.Bold) }
@@ -521,10 +575,10 @@ private fun OxideNativeApp(api: OxideApi) {
                     Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(14.dp)) {
                         Column(Modifier.fillMaxWidth().padding(14.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
                             Text("منصات التحميل", color = Cyan, fontWeight = FontWeight.Bold)
-                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-                                Button(onClick = { try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(OxideApi.BASE_URL + "/download.html"))) } catch (_: Exception) { error = "تعذر فتح صفحة Android" } }, modifier = Modifier.weight(1f), contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 4.dp, vertical = 10.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0xD9087F9B))) { Icon(Icons.Filled.Android, contentDescription = "Android", modifier = Modifier.size(17.dp)); Spacer(Modifier.size(4.dp)); Text("Android", fontSize = 10.sp, maxLines = 1) }
-                                Button(onClick = { try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(OxideApi.BASE_URL + "/ios.html"))) } catch (_: Exception) { error = "تعذر فتح صفحة iOS" } }, modifier = Modifier.weight(1f), contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 4.dp, vertical = 10.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0xD915506B))) { Icon(Icons.Filled.PhoneIphone, contentDescription = "iOS", modifier = Modifier.size(17.dp)); Spacer(Modifier.size(4.dp)); Text("iOS", fontSize = 10.sp, maxLines = 1) }
-                                Button(onClick = { try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(OxideApi.BASE_URL + "/beta.html"))) } catch (_: Exception) { error = "تعذر فتح صفحة Beta" } }, modifier = Modifier.weight(1f), contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 4.dp, vertical = 10.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF15506B))) { Icon(Icons.Filled.Science, contentDescription = "Beta", modifier = Modifier.size(17.dp)); Spacer(Modifier.size(4.dp)); Text("Beta", fontSize = 10.sp, maxLines = 1) }
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                                Button(onClick = { try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(OxideApi.BASE_URL + "/download.html"))) } catch (_: Exception) { error = "تعذر فتح صفحة Android" } }, modifier = Modifier.weight(1f).height(62.dp).border(1.dp, Color(0x887DEBFF), RoundedCornerShape(16.dp)), shape = RoundedCornerShape(16.dp), contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 4.dp, vertical = 9.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0x6B19A9C8))) { Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(3.dp)) { PlatformVectorIcon("android", Modifier.size(25.dp)); Text("Android", fontSize = 11.sp, fontWeight = FontWeight.Bold, maxLines = 1) } }
+                                Button(onClick = { try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(OxideApi.BASE_URL + "/ios.html"))) } catch (_: Exception) { error = "تعذر فتح صفحة iOS" } }, modifier = Modifier.weight(1f).height(62.dp).border(1.dp, Color(0x887DEBFF), RoundedCornerShape(16.dp)), shape = RoundedCornerShape(16.dp), contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 4.dp, vertical = 9.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0x6B47718C))) { Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(3.dp)) { PlatformVectorIcon("apple", Modifier.size(25.dp)); Text("iOS", fontSize = 11.sp, fontWeight = FontWeight.Bold, maxLines = 1) } }
+                                Button(onClick = { try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(OxideApi.BASE_URL + "/beta.html"))) } catch (_: Exception) { error = "تعذر فتح صفحة Beta" } }, modifier = Modifier.weight(1f).height(62.dp).border(1.dp, Color(0x887DEBFF), RoundedCornerShape(16.dp)), shape = RoundedCornerShape(16.dp), contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 4.dp, vertical = 9.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0x6B315E86))) { Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(3.dp)) { PlatformVectorIcon("beta", Modifier.size(25.dp)); Text("Beta", fontSize = 11.sp, fontWeight = FontWeight.Bold, maxLines = 1) } }
                             }
                         }
                     }
@@ -551,7 +605,7 @@ private fun OxideNativeApp(api: OxideApi) {
                 }
                 1 -> {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) { Icon(Icons.Filled.Redeem, contentDescription = null, tint = Cyan, modifier = Modifier.size(24.dp)); Text("OXIDE ISLAND", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold) }
-                    Card(colors = CardDefaults.cardColors(containerColor = Color(0xE6084170)), shape = RoundedCornerShape(15.dp)) {
+                    Card(colors = CardDefaults.cardColors(containerColor = Color(0x703C7895)), shape = RoundedCornerShape(15.dp)) {
                         Column(Modifier.fillMaxWidth().padding(18.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
                             Text("رصيد النقاط", color = Muted, fontSize = 13.sp)
                             Text((remoteData?.optInt("points", 0) ?: profile?.optInt("points", 0) ?: 0).toString(), color = Cyan, fontSize = 34.sp, fontWeight = FontWeight.ExtraBold)
@@ -920,7 +974,7 @@ private fun OxideNativeApp(api: OxideApi) {
                                         val id = item.optInt("id")
                                         val reward = item.optInt("reward_points")
                                         Card(
-                                            colors = CardDefaults.cardColors(containerColor = Color(0xCC102A46)),
+                                            colors = CardDefaults.cardColors(containerColor = Color(0x75152F4B)),
                                             shape = RoundedCornerShape(12.dp),
                                             border = androidx.compose.foundation.BorderStroke(1.dp, if (item.isNull("read_at")) Color(0xFF168BD0) else Color(0xFF29445E))
                                         ) {
