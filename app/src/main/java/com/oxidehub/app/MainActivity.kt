@@ -1,6 +1,26 @@
 package com.oxidehub.app
 
 import android.content.Intent
+import android.graphics.BitmapFactory
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.offset
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.net.URL
 import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -104,6 +124,7 @@ private fun OxideNativeApp(api: OxideApi) {
     var commentsPostId by remember { mutableStateOf(0) }
     var selectedMissionId by remember { mutableStateOf(0) }
     var proofUploading by remember { mutableStateOf(false) }
+    var backgroundImage by remember { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
 
     fun refreshProfile() {
         scope.launch {
@@ -145,7 +166,16 @@ private fun OxideNativeApp(api: OxideApi) {
         }
     }
 
-    LaunchedEffect(Unit) { refreshProfile() }
+    LaunchedEffect(Unit) {
+        refreshProfile()
+        backgroundImage = withContext(Dispatchers.IO) {
+            try {
+                URL("https://kald2007mess-cyber-github-io.pages.dev/background.png").openStream().use {
+                    BitmapFactory.decodeStream(it)?.asImageBitmap()
+                }
+            } catch (_: Exception) { null }
+        }
+    }
 
     LaunchedEffect(selected, reloadKey) {
         val endpoint = when (selected) {
@@ -221,29 +251,60 @@ private fun OxideNativeApp(api: OxideApi) {
     }
 
     Scaffold(
-        containerColor = Space,
+        containerColor = Color(0xFF030816),
         bottomBar = {
-            NavigationBar(containerColor = Color(0xFF0A1A2E)) {
+            NavigationBar(
+                modifier = Modifier.padding(horizontal = 6.dp, vertical = 5.dp)
+                    .border(1.dp, Color(0xFF176CAA), RoundedCornerShape(13.dp)),
+                containerColor = Color(0xEB050F20),
+                tonalElevation = 0.dp,
+                windowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0)
+            ) {
                 tabs.forEachIndexed { index, label ->
                     NavigationBarItem(
                         selected = selected == index,
                         onClick = { selected = index },
                         icon = { Text(icons[index], fontSize = 20.sp) },
-                        label = { Text(label, fontSize = 10.sp) }
+                        label = { Text(label, fontSize = 9.sp, maxLines = 1) },
+                        colors = androidx.compose.material3.NavigationBarItemDefaults.colors(
+                            selectedIconColor = Color(0xFF8FE1FF),
+                            selectedTextColor = Color(0xFF8FE1FF),
+                            indicatorColor = Color(0xFF075A8E),
+                            unselectedIconColor = Color(0xFFC6D5E7),
+                            unselectedTextColor = Color(0xFFC6D5E7)
+                        )
                     )
                 }
             }
         }
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Brush.verticalGradient(listOf(Color(0xFF0B2039), Space, Color(0xFF030B15))))
-                .padding(padding)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 18.dp, vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
-        ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            if (backgroundImage != null) {
+                Image(
+                    bitmap = backgroundImage!!,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                androidx.compose.foundation.layout.Spacer(
+                    Modifier.fillMaxSize().background(Color(0xFF030816))
+                )
+            }
+            Box(
+                Modifier.fillMaxSize().background(
+                    Brush.verticalGradient(listOf(Color(0xAD030816), Color(0xE0030816)))
+                )
+            )
+            OxideRainOverlay()
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 18.dp, vertical = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text("OXIDE HUB", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Black)
@@ -501,6 +562,72 @@ private fun OxideNativeApp(api: OxideApi) {
             sectionError?.let { FeatureCard("تنبيه", it) }
             Spacer(Modifier.height(4.dp))
             Text("OXIDE HUB • Android Native", color = Muted, fontSize = 10.sp)
+            }
+        }
+    }
+}
+
+
+@Composable
+private fun OxideRainOverlay() {
+    val transition = rememberInfiniteTransition(label = "oxide-rain")
+    val progress by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(tween(1150, easing = LinearEasing)),
+        label = "rain-progress"
+    )
+    Canvas(modifier = Modifier.fillMaxSize()) {
+        val w = size.width
+        val h = size.height
+        // Soft moving star field, matching the website's subtle blue-white stars.
+        for (i in 0 until 42) {
+            val x = ((i * 83f) % w)
+            val y = ((i * 137f + progress * 26f) % h)
+            drawCircle(
+                color = Color.White.copy(alpha = if (i % 4 == 0) 0.24f else 0.11f),
+                radius = if (i % 5 == 0) 1.8f else 1.0f,
+                center = Offset(x, y)
+            )
+        }
+        // Fine diagonal rain streaks, continuously falling over the full screen.
+        for (i in 0 until 150) {
+            val x = ((i * 47.7f) % (w + 35f))
+            val baseY = ((i * 91.3f + progress * (h + 90f) * (0.65f + (i % 7) * 0.09f)) % (h + 70f)) - 35f
+            val length = 8f + (i % 9) * 1.7f
+            drawLine(
+                brush = Brush.verticalGradient(
+                    colors = listOf(Color.Transparent, Color(0xFFA9D8FF).copy(alpha = 0.12f + (i % 5) * 0.035f), Color(0xFFEAF7FF).copy(alpha = 0.24f)),
+                    startY = baseY - length,
+                    endY = baseY
+                ),
+                start = Offset(x, baseY - length),
+                end = Offset(x - 2.2f, baseY),
+                strokeWidth = if (i % 3 == 0) 1.25f else 0.8f,
+                cap = StrokeCap.Round
+            )
+        }
+        // Glass beads and their faint trails.
+        for (i in 0 until 34) {
+            val x = ((i * 109f + 23f) % w)
+            val y = ((i * 173f + progress * (h + 55f) * (0.12f + (i % 4) * 0.035f)) % (h + 40f)) - 20f
+            drawLine(
+                color = Color(0xFFBFE4FF).copy(alpha = 0.10f),
+                start = Offset(x, y - 18f),
+                end = Offset(x, y),
+                strokeWidth = 2.0f,
+                cap = StrokeCap.Round
+            )
+            drawCircle(
+                color = Color(0xFFDDF2FF).copy(alpha = 0.22f),
+                radius = 2.0f + (i % 3) * 0.65f,
+                center = Offset(x, y)
+            )
+            drawCircle(
+                color = Color.White.copy(alpha = 0.34f),
+                radius = 0.8f,
+                center = Offset(x - 1f, y - 1f)
+            )
         }
     }
 }
