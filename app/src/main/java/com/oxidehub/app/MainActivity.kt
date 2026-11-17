@@ -415,6 +415,25 @@ private fun OxideNativeApp(api: OxideApi) {
                             Button(onClick = { try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(OxideApi.BASE_URL + "/beta.html"))) } catch (_: Exception) { error = "تعذر فتح صفحة Beta" } }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF15506B))) { Text("🧪 BETA") }
                         }
                     }
+                    Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(14.dp)) {
+                        Column(Modifier.fillMaxWidth().padding(15.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                            Text("طريقة الاستخدام", color = Cyan, fontSize = 17.sp, fontWeight = FontWeight.Bold)
+                            Text("أربع خطوات بسيطة للوصول إلى التحميل", color = Muted, fontSize = 11.sp)
+                            listOf(
+                                "افتح OXIDE HUB وادخل إلى الصفحة الرئيسية.",
+                                "شاهد الإعلانات الثلاثة وأكمل كل إعلان حتى تأكيده.",
+                                "اختر جهازك: Android أو iPhone أو Beta.",
+                                "حمّل التطبيق وانتظر اكتمال التنزيل ثم ثبّته."
+                            ).forEachIndexed { index, step ->
+                                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                                    Surface(color = Color(0xFF075A9D), shape = RoundedCornerShape(50)) {
+                                        Box(Modifier.size(27.dp), contentAlignment = Alignment.Center) { Text((index + 1).toString(), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp) }
+                                    }
+                                    Text(step, color = Color.White, fontSize = 12.sp, lineHeight = 17.sp, modifier = Modifier.weight(1f))
+                                }
+                            }
+                        }
+                    }
                     Text("مرحباً بك في OXIDE HUB", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                     Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(22.dp)) {
                         Column(Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
