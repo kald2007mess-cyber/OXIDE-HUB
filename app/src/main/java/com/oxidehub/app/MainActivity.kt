@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.offset
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.StrokeCap
@@ -105,6 +106,13 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 private fun OxideNativeApp(api: OxideApi) {
+    val backgroundTransition = rememberInfiniteTransition(label = "oxide-background-drift")
+    val backgroundDrift by backgroundTransition.animateFloat(
+        initialValue = -0.018f,
+        targetValue = 0.018f,
+        animationSpec = infiniteRepeatable(animation = tween(35000, easing = LinearEasing), repeatMode = androidx.compose.animation.core.RepeatMode.Reverse),
+        label = "oxide-background-offset"
+    )
     val tabs = listOf("الرئيسية", "مكافأة", "VIP", "إحالة", "أخبار")
     val icons = listOf("⌂", "🎁", "♛", "♧", "▤")
     val context = LocalContext.current
@@ -314,7 +322,10 @@ private fun OxideNativeApp(api: OxideApi) {
                 Image(
                     bitmap = backgroundImage!!,
                     contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxSize().graphicsLayer {
+                        translationX = size.width * backgroundDrift
+                        translationY = size.height * backgroundDrift
+                    },
                     contentScale = ContentScale.Crop
                 )
             } else {
