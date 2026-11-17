@@ -81,8 +81,8 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 private fun OxideNativeApp(api: OxideApi) {
-    val tabs = listOf("الرئيسية", "المهام", "المكافآت", "الإحالات", "الأخبار", "الدعم")
-    val icons = listOf("⌂", "✓", "★", "⇧", "▤", "✉")
+    val tabs = listOf("الرئيسية", "المهام", "المكافآت", "الإحالات", "الأخبار", "الدعم", "الإشعارات")
+    val icons = listOf("⌂", "✓", "★", "⇧", "▤", "✉", "●")
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var selected by remember { mutableStateOf(0) }
@@ -154,6 +154,7 @@ private fun OxideNativeApp(api: OxideApi) {
             3 -> "/api/referral"
             4 -> "/api/news"
             5 -> "/api/support/messages?after=0"
+            6 -> "/api/notifications"
             else -> null
         }
         if (endpoint != null) {
@@ -424,6 +425,37 @@ private fun OxideNativeApp(api: OxideApi) {
                                     commentDraft = ""
                                 }
                             )
+                        }
+                    }
+                }
+                6 -> {
+                    Text("الإشعارات", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                    val notifications = remoteData?.optJSONArray("notifications")
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Button(onClick = { sendPost("/api/notifications", JSONObject().put("action", "read_all"), "تم تحديد الإشعارات كمقروءة") }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF15506B))) { Text("قراءة الكل") }
+                        Button(onClick = { sendPost("/api/notifications", JSONObject().put("action", "delete_read"), "تم حذف الإشعارات المقروءة") }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF15506B))) { Text("حذف المقروءة") }
+                    }
+                    if (notifications == null || notifications.length() == 0) {
+                        FeatureCard("لا توجد إشعارات", "ستظهر هنا تنبيهات حسابك ومكافآتك الجديدة.")
+                    } else {
+                        for (i in 0 until notifications.length()) {
+                            val item = notifications.optJSONObject(i) ?: continue
+                            val id = item.optInt("id")
+                            val reward = item.optInt("reward_points")
+                            Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(18.dp)) {
+                                Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
+                                    Text(item.optString("title"), color = Cyan, fontWeight = FontWeight.Bold)
+                                    Text(item.optString("body"), color = Color.White, fontSize = 13.sp)
+                                    if (reward > 0) Text("المكافأة: $reward نقطة", color = Green)
+                                    Text(if (item.isNull("read_at")) "جديد" else "مقروء", color = Muted, fontSize = 11.sp)
+                                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        if (reward > 0 && item.isNull("claimed_at")) {
+                                            Button(onClick = { sendPost("/api/notifications", JSONObject().put("action", "claim").put("id", id), "تمت إضافة $reward نقطة إلى رصيدك") }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF087F9B))) { Text("استلام المكافأة") }
+                                        }
+                                        if (item.isNull("read_at")) TextButton(onClick = { sendPost("/api/notifications", JSONObject().put("action", "read").put("id", id), "تم تحديد الإشعار كمقروء") }) { Text("تحديد كمقروء") }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
