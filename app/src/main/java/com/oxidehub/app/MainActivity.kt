@@ -1229,7 +1229,6 @@ private fun oxideText(arabic: String, language: String): String {
         "نسخ" to listOf("Copy", "Copier", "Copiar", "Копировать", "Kopieren", "Kopyala", "Salin"),
         "رقم المستخدم الخاص بك" to listOf("Your user ID", "Votre identifiant", "Tu ID de usuario", "Ваш ID пользователя", "Deine Benutzer-ID", "Kullanıcı kimliğiniz", "ID pengguna Anda"),
         "التقدم:" to listOf("Progress:", "Progression :", "Progreso:", "Прогресс:", "Fortschritt:", "İlerleme:", "Kemajuan:"),
-        "المرحلة $stage/3" to listOf("Stage $stage/3", "Étape $stage/3", "Etapa $stage/3", "Этап $stage/3", "Stufe $stage/3", "Aşama $stage/3", "Tahap $stage/3"),
         "منصات التحميل" to listOf("Download platforms", "Plateformes de téléchargement", "Plataformas de descarga", "Платформы загрузки", "Download-Plattformen", "İndirme platformları", "Platform unduhan"),
         "طريقة الاستخدام" to listOf("How to use", "Mode d'emploi", "Cómo usar", "Как пользоваться", "Anleitung", "Nasıl kullanılır", "Cara menggunakan"),
         "أربع خطوات بسيطة للوصول إلى التحميل" to listOf("Four simple steps to access downloads", "Quatre étapes simples pour accéder aux téléchargements", "Cuatro pasos para acceder a las descargas", "Четыре простых шага для доступа к загрузкам", "Vier einfache Schritte zu den Downloads", "İndirmelere erişmek için dört basit adım", "Empat langkah mudah untuk mengakses unduhan"),
