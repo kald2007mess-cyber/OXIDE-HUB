@@ -590,7 +590,7 @@ private fun OxideNativeApp(api: OxideApi) {
                                     color = Cyan,
                                     trackColor = Color(0xFF244765)
                                 )
-                                Text(oxideText("المكافأة: ${islandData?.optInt(", language)pointsPerAd", 5) ?: 5} نقاط لكل إعلان", color = Muted, fontSize = 12.sp)
+                                Text("المكافأة: ${islandData?.optInt(\"pointsPerAd\", 5) ?: 5} نقاط لكل إعلان", color = Muted, fontSize = 12.sp)
                                 val hours = islandRemainingSeconds / 3600
                                 val minutes = (islandRemainingSeconds % 3600) / 60
                                 val seconds = islandRemainingSeconds % 60
@@ -676,7 +676,7 @@ private fun OxideNativeApp(api: OxideApi) {
                                     Text(oxideText("${(missionTotal - missionCompleted).coerceAtLeast(0)} مهمات متبقية", language), color = Muted, fontSize = 11.sp)
                                 }
                                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                    Text(oxideText("الرصيد: ${remoteData?.optInt(", language)points", profile?.optInt("points", 0) ?: 0) ?: 0} نقطة", color = Cyan, fontSize = 11.sp)
+                                    Text("الرصيد: ${remoteData?.optInt(\"points\", profile?.optInt(\"points\", 0) ?: 0) ?: 0} نقطة", color = Cyan, fontSize = 11.sp)
                                     Text(oxideText("المهمات المكتملة", language), color = Muted, fontSize = 11.sp)
                                 }
                             }
