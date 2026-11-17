@@ -446,6 +446,7 @@ private fun OxideNativeApp(api: OxideApi) {
                     Brush.verticalGradient(listOf(Color(0xAD030816), Color(0xE0030816)))
                 )
             )
+            OxideRainOverlay()
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -960,7 +961,6 @@ private fun OxideNativeApp(api: OxideApi) {
             Spacer(Modifier.height(4.dp))
             Text("OXIDE HUB • Android Native", color = Muted, fontSize = 10.sp)
             }
-            OxideRainOverlay()
             if (notificationsOpen) {
                 Dialog(onDismissRequest = { notificationsOpen = false }) {
                     Surface(
