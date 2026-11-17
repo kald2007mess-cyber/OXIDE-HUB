@@ -557,7 +557,7 @@ private fun OxideNativeApp(api: OxideApi) {
                         }
                     }
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(9.dp)) {
-                        listOf("🎁 اجمع واستبدل", "📋 المهمات والعروض").forEachIndexed { index, label ->
+                        listOf("اجمع واستبدل", "المهمات والعروض").forEachIndexed { index, label ->
                             Surface(
                                 modifier = Modifier.weight(1f).height(82.dp).clickable { islandTab = index },
                                 color = if (islandTab == index) Color(0xFF075A9D) else Color(0xF00F2643),
@@ -565,7 +565,7 @@ private fun OxideNativeApp(api: OxideApi) {
                                 border = androidx.compose.foundation.BorderStroke(1.dp, if (islandTab == index) Color(0xFF00AAFF) else Color(0xFF176CAA))
                             ) {
                                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                    Text(label, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) { Icon(if (index == 0) Icons.Filled.Redeem else Icons.Filled.Article, contentDescription = null, tint = Cyan, modifier = Modifier.size(23.dp)); Text(label, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold) }
                                 }
                             }
                         }
@@ -588,7 +588,7 @@ private fun OxideNativeApp(api: OxideApi) {
                                 val minutes = (islandRemainingSeconds % 3600) / 60
                                 val seconds = islandRemainingSeconds % 60
                                 Text("الوقت المتبقي للدورة: %02d:%02d:%02d".format(hours, minutes, seconds), color = Muted, fontSize = 12.sp)
-                                Button(onClick = { actionMessage = "🔒 SOON — مشاهدة الإعلانات غير متاحة حاليًا." }, enabled = false, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(disabledContainerColor = Color(0xFF244765))) { Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) { Icon(Icons.Filled.Lock, contentDescription = null, modifier = Modifier.size(16.dp)); Text("مشاهدة الإعلانات — SOON") } }
+                                Button(onClick = { actionMessage = "مشاهدة الإعلانات غير متاحة حاليًا." }, enabled = false, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(disabledContainerColor = Color(0xFF244765))) { Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) { Icon(Icons.Filled.Lock, contentDescription = null, modifier = Modifier.size(16.dp)); Text("مشاهدة الإعلانات — SOON") } }
                                 Text("مشاهدة الإعلانات غير متاحة حاليًا، كما في الموقع الأصلي.", color = Muted, fontSize = 11.sp)
                             }
                         }
@@ -1210,7 +1210,7 @@ private fun NewsCard(
             }
             Text("المشاهدات: " + post.optInt("views") + " • التعليقات: " + post.optInt("comments_count"), color = Muted, fontSize = 11.sp)
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) { Icon(Icons.Filled.Favorite, contentDescription = "Hearts", tint = Cyan, modifier = Modifier.size(15.dp)); Text(post.optInt("heart_count").toString(), color = Cyan); Icon(Icons.Filled.SentimentDissatisfied, contentDescription = "Angry", tint = Cyan, modifier = Modifier.size(15.dp)); Text(post.optInt("angry_count").toString(), color = Cyan); Icon(Icons.Filled.Favorite, contentDescription = "Sad", tint = Cyan, modifier = Modifier.size(15.dp)); Text(post.optInt("sad_count").toString(), color = Cyan); Icon(Icons.Filled.ThumbUp, contentDescription = "Likes", tint = Cyan, modifier = Modifier.size(15.dp)); Text(post.optInt("like_count").toString(), color = Cyan); Icon(Icons.Filled.ThumbDown, contentDescription = "Dislikes", tint = Cyan, modifier = Modifier.size(15.dp)); Text(post.optInt("dislike_count").toString(), color = Cyan) }
-            Text("تفاعلك: " + post.optString("my_reaction", "لم تتفاعل بعد"), color = Muted, fontSize = 11.sp)
+            Text(if (post.optString("my_reaction").isBlank()) "لم تتفاعل بعد" else "تم تسجيل تفاعلك", color = Muted, fontSize = 11.sp)
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 listOf(
                     "❤️" to Icons.Filled.Favorite,
