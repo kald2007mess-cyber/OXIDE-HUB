@@ -120,6 +120,9 @@ private fun OxideNativeApp(api: OxideApi) {
     var reloadKey by remember { mutableStateOf(0) }
     var supportDraft by remember { mutableStateOf("") }
     var uuidDraft by remember { mutableStateOf("") }
+    var selectedOfferId by remember { mutableStateOf(0) }
+    var selectedOfferName by remember { mutableStateOf("") }
+    var selectedOfferCost by remember { mutableStateOf(0) }
     var linkCode by remember { mutableStateOf("") }
     var commentDraft by remember { mutableStateOf("") }
     var referralDraft by remember { mutableStateOf("") }
@@ -535,13 +538,32 @@ private fun OxideNativeApp(api: OxideApi) {
                                         Text(offer.optString("name"), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 17.sp)
                                         Text("$cost نقطة", color = Cyan)
                                         Button(onClick = {
-                                            if (uuidDraft.isBlank()) sectionError = "أدخل UUID أولاً"
-                                            else sendPost("/api/rewards", JSONObject().put("offerId", offerId).put("userUuid", uuidDraft.trim()), "تم إرسال طلب الاستبدال للمراجعة")
-                                        }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF087F9B))) { Text("طلب الاستبدال") }
+                                            selectedOfferId = offerId
+                                            selectedOfferName = offer.optString("name")
+                                            selectedOfferCost = cost
+                                            sectionError = null
+                                        }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF087F9B))) { Text("استبدال") }
                                     }
                                 }
                             }
-                            OutlinedField(value = uuidDraft, onValueChange = { uuidDraft = it }, label = "معرّف حسابك OX-XXXXXXXX أو UUID")
+                            if (selectedOfferId > 0) {
+                                Card(colors = CardDefaults.cardColors(containerColor = Color(0xFF0B1B30)), shape = RoundedCornerShape(12.dp)) {
+                                    Column(Modifier.fillMaxWidth().padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        Text("تأكيد استبدال $selectedOfferName مقابل $selectedOfferCost نقطة", color = Cyan, fontWeight = FontWeight.Bold)
+                                        OutlinedField(value = uuidDraft, onValueChange = { uuidDraft = it }, label = "OX-XXXXXXXX أو UUID كامل")
+                                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                            Button(onClick = {
+                                                if (uuidDraft.isBlank()) sectionError = "أدخل UUID الخاص بحسابك أولاً."
+                                                else {
+                                                    sendPost("/api/rewards", JSONObject().put("offerId", selectedOfferId).put("userUuid", uuidDraft.trim()), "تم تسجيل طلبك وإرساله للإدارة. الحالة: قيد المعالجة.")
+                                                    selectedOfferId = 0
+                                                }
+                                            }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF087F9B))) { Text("تأكيد الطلب") }
+                                            TextButton(onClick = { selectedOfferId = 0 }) { Text("إلغاء", color = Muted) }
+                                        }
+                                    }
+                                }
+                            }
                         }
                         Text("طلبات الاستبدال السابقة", color = Cyan, fontWeight = FontWeight.Bold)
                         val orders = orderData?.optJSONArray("orders")
