@@ -1114,7 +1114,6 @@ private fun MissionCard(item: JSONObject, onOpen: (String) -> Unit, onPickProof:
 }
 
 @Composable
-@Composable
 private fun NewsCard(
     post: JSONObject,
     comment: String,
