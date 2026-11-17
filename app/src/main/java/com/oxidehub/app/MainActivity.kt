@@ -83,7 +83,10 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.material3.Text as MaterialText
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
@@ -111,6 +114,12 @@ private val Panel = Color(0xFF10243D)
 private val Cyan = Color(0xFF42D9F5)
 private val Muted = Color(0xFF9BB0C8)
 private val Green = Color(0xFF65D6A5)
+private val LocalOxideLanguage = compositionLocalOf { "ar" }
+
+@Composable
+private fun Text(text: String, modifier: Modifier = Modifier, color: Color = Color.Unspecified, fontSize: TextUnit = TextUnit.Unspecified, fontWeight: FontWeight? = null, letterSpacing: TextUnit = TextUnit.Unspecified, lineHeight: TextUnit = TextUnit.Unspecified, maxLines: Int = Int.MAX_VALUE) {
+    MaterialText(text = translateUiText(text, LocalOxideLanguage.current), modifier = modifier, color = color, fontSize = fontSize, fontWeight = fontWeight, letterSpacing = letterSpacing, lineHeight = lineHeight, maxLines = maxLines)
+}
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -356,6 +365,7 @@ private fun OxideNativeApp(api: OxideApi) {
         containerColor = Color(0xFF030816),
 
     ) { padding ->
+        CompositionLocalProvider(LocalOxideLanguage provides language) {
         Box(modifier = Modifier.fillMaxSize()) {
             if (backgroundImage != null) {
                 Image(
@@ -938,6 +948,7 @@ private fun OxideNativeApp(api: OxideApi) {
                 }
             }
         }
+        }
     }
 }
 
@@ -1274,6 +1285,40 @@ private fun FeatureCard(title: String, description: String) {
 }
 
  
+private fun translateUiText(text: String, language: String): String {
+    if (language == "ar") return text
+    val old = oxideText(text, language)
+    if (old != text) return old
+    val index = when (language) { "en" -> 0; "fr" -> 1; "es" -> 2; "ru" -> 3; "de" -> 4; "tr" -> 5; "id" -> 6; else -> return text }
+    val words = mapOf(
+        "طريقة الاستخدام" to listOf("How to use","Comment utiliser","Cómo usar","Как использовать","Anleitung","Nasıl kullanılır","Cara menggunakan"),
+        "منصات التحميل" to listOf("Download platforms","Plateformes de téléchargement","Plataformas de descarga","Платформы загрузки","Download-Plattformen","İndirme platformları","Platform unduhan"),
+        "رصيد النقاط" to listOf("Points balance","Solde de points","Saldo de puntos","Баланс очков","Punktestand","Puan bakiyesi","Saldo poin"),
+        "المكافآت المتاحة" to listOf("Available rewards","Récompenses disponibles","Recompensas disponibles","Доступные награды","Verfügbare Belohnungen","Mevcut ödüller","Hadiah tersedia"),
+        "طلب استبدال النقاط" to listOf("Points redemption request","Demande d’échange de points","Solicitud de canje de puntos","Запрос на обмен очков","Punkte-Einlöseanfrage","Puan bozdurma talebi","Permintaan penukaran poin"),
+        "أدخل UUID الخاص بك" to listOf("Enter your UUID","Saisissez votre UUID","Introduce tu UUID","Введите UUID","UUID eingeben","UUID'nizi girin","Masukkan UUID Anda"),
+        "تأكيد الطلب" to listOf("Confirm request","Confirmer","Confirmar solicitud","Подтвердить запрос","Anfrage bestätigen","Talebi onayla","Konfirmasi permintaan"),
+        "إلغاء" to listOf("Cancel","Annuler","Cancelar","Отмена","Abbrechen","İptal","Batal"),
+        "المهمات والعروض" to listOf("Tasks and offers","Missions et offres","Tareas y ofertas","Задания и предложения","Aufgaben und Angebote","Görevler ve teklifler","Tugas dan penawaran"),
+        "الإحالات والترتيب" to listOf("Referrals and rankings","Parrainages et classements","Referidos y clasificaciones","Рефералы и рейтинги","Empfehlungen und Ranglisten","Davetler ve sıralamalar","Referral dan peringkat"),
+        "ادعُ أصدقاءك واربح" to listOf("Invite friends and earn","Invitez vos amis et gagnez","Invita amigos y gana","Приглашайте друзей и зарабатывайте","Lade Freunde ein und verdiene","Arkadaşlarını davet et, kazan","Undang teman dan dapatkan hadiah"),
+        "رابط دعوتك" to listOf("Your invite link","Votre lien d’invitation","Tu enlace de invitación","Ваша ссылка-приглашение","Dein Einladungslink","Davet bağlantınız","Tautan undangan Anda"),
+        "إضافة إحالة" to listOf("Add referral code","Ajouter un code de parrainage","Añadir código de referido","Добавить реферальный код","Empfehlungscode hinzufügen","Davet kodu ekle","Tambah kode referral"),
+        "لا توجد أخبار" to listOf("No news","Aucune actualité","No hay noticias","Новостей нет","Keine Neuigkeiten","Haber yok","Belum ada berita"),
+        "الإشعارات" to listOf("Notifications","Notifications","Notificaciones","Уведомления","Benachrichtigungen","Bildirimler","Notifikasi"),
+        "قراءة الكل" to listOf("Mark all read","Tout marquer comme lu","Marcar todo como leído","Отметить всё прочитанным","Alle als gelesen markieren","Tümünü okundu işaretle","Tandai semua dibaca"),
+        "حذف المقروءة" to listOf("Delete read","Supprimer les lues","Eliminar leídas","Удалить прочитанные","Gelesene löschen","Okunanları sil","Hapus yang dibaca"),
+        "استلام المكافأة" to listOf("Claim reward","Réclamer la récompense","Reclamar recompensa","Получить награду","Belohnung abholen","Ödülü al","Klaim hadiah"),
+        "تحديد كمقروء" to listOf("Mark as read","Marquer comme lu","Marcar como leído","Отметить прочитанным","Als gelesen markieren","Okundu olarak işaretle","Tandai sudah dibaca"),
+        "الدعم والمحادثات" to listOf("Support and messages","Assistance et messages","Soporte y mensajes","Поддержка и сообщения","Support und Nachrichten","Destek ve mesajlar","Dukungan dan pesan"),
+        "إرسال الرسالة" to listOf("Send message","Envoyer","Enviar mensaje","Отправить сообщение","Nachricht senden","Mesaj gönder","Kirim pesan"),
+        "عرض التعليقات" to listOf("View comments","Voir les commentaires","Ver comentarios","Показать комментарии","Kommentare ansehen","Yorumları göster","Lihat komentar"),
+        "لا توجد تعليقات بعد" to listOf("No comments yet","Pas encore de commentaires","Aún no hay comentarios","Комментариев пока нет","Noch keine Kommentare","Henüz yorum yok","Belum ada komentar"),
+        "اكتب تعليقاً" to listOf("Write a comment","Écrire un commentaire","Escribe un comentario","Написать комментарий","Kommentar schreiben","Yorum yazın","Tulis komentar"),
+        "إرسال التعليق" to listOf("Post comment","Envoyer le commentaire","Enviar comentario","Отправить комментарий","Kommentar senden","Yorumu gönder","Kirim komentar")
+    )
+    return words[text]?.getOrNull(index) ?: text
+}
 private fun oxideText(arabic: String, language: String): String {
     if (language == "ar") return arabic
     val translations = mapOf(
