@@ -778,7 +778,7 @@ private fun OxideNativeApp(api: OxideApi) {
                             ) {
                                 Column(Modifier.padding(14.dp)) {
                                     Text(if (mine) "أنت" else "الدعم", color = Cyan, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                                    Text(item.optString("message_text"), color = Color.White)
+                                    Text(if (item.optString("message_type", "text") == "text") item.optString("message_text") else "تم استلام وسائط", color = Color.White)
                                 }
                             }
                         }
