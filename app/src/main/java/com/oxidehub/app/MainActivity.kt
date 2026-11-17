@@ -25,6 +25,8 @@ import kotlinx.coroutines.withContext
 import java.net.URL
 import android.net.Uri
 import android.widget.VideoView
+import java.io.File
+import java.io.FileOutputStream
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -1105,13 +1107,7 @@ private fun MissionCard(item: JSONObject, onOpen: (String) -> Unit, onPickProof:
             if (status != "approved" && status != "pending") {
                 Button(onClick = onPickProof, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF087F9B))) {
                     Text(if (status == "rejected") "إعادة إرسال الإثبات" else "اختيار صورة الإثبات")
-                }
-            }
-        }
-    }
-}
-
-@Composable
+           @Composable
 private fun NewsCard(
     post: JSONObject,
     comment: String,
@@ -1122,47 +1118,92 @@ private fun NewsCard(
     onReaction: (String) -> Unit,
     onComment: () -> Unit
 ) {
-    var mediaBitmap by remember(post.optInt("id")) { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
+    val postId = post.optInt("id")
     val context = LocalContext.current
-    LaunchedEffect(post.optInt("id")) {
+    var mediaBitmap by remember(postId) { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
+    var videoPath by remember(postId) { mutableStateOf<String?>(null) }
+    var videoError by remember(postId) { mutableStateOf(false) }
+
+    LaunchedEffect(postId, post.optString("media_type")) {
         onView()
-        if (post.optString("media_type") != "video") {
+        if (post.optString("media_type") == "video") {
+            videoPath = withContext(Dispatchers.IO) {
+                try {
+                    val cached = File(context.cacheDir, "oxide_news_" + postId + ".mp4")
+                    if (!cached.exists() || cached.length() == 0L) {
+                        val connection = URL(OxideApi.BASE_URL + "/api/news/media?id=" + postId).openConnection().apply {
+                            connectTimeout = 20000
+                            readTimeout = 60000
+                            useCaches = false
+                        }
+                        connection.getInputStream().use { input ->
+                            FileOutputStream(cached).use { output -> input.copyTo(output) }
+                        }
+                    }
+                    if (cached.exists() && cached.length() > 0L) cached.absolutePath else null
+                } catch (_: Exception) {
+                    videoError = true
+                    null
+                }
+            }
+        } else {
             mediaBitmap = withContext(Dispatchers.IO) {
                 try {
-                    URL(OxideApi.BASE_URL + "/api/news/media?id=" + post.optInt("id")).openStream().use {
+                    URL(OxideApi.BASE_URL + "/api/news/media?id=" + postId).openStream().use {
                         BitmapFactory.decodeStream(it)?.asImageBitmap()
                     }
                 } catch (_: Exception) { null }
             }
         }
     }
+
     Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(18.dp)) {
         Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(post.optString("title"), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
             if (post.optString("media_type") == "video") {
-                AndroidView(
-                    modifier = Modifier.fillMaxWidth().height(210.dp),
-                    factory = { viewContext ->
-                        VideoView(viewContext).apply {
-                            setVideoURI(Uri.parse(OxideApi.BASE_URL + "/api/news/media?id=" + post.optInt("id")))
-                            setOnPreparedListener { player ->
-                                player.isLooping = true
-                                player.setVolume(0f, 0f)
-                                start()
+                val readyPath = videoPath
+                if (readyPath != null) {
+                    AndroidView(
+                        modifier = Modifier.fillMaxWidth().height(210.dp),
+                        factory = { viewContext ->
+                            VideoView(viewContext).apply {
+                                setVideoPath(readyPath)
+                                setOnPreparedListener { player ->
+                                    player.isLooping = true
+                                    player.setVolume(0f, 0f)
+                                    start()
+                                }
+                                setOnErrorListener { _, _, _ ->
+                                    videoError = true
+                                    true
+                                }
                             }
                         }
-                    },
-                    update = { player -> if (!player.isPlaying) player.start() }
-                )
+                    )
+                } else if (videoError) {
+                    Text("تعذر تشغيل الفيديو. تحقق من اتصال الإنترنت أو صيغة الملف.", color = Muted, fontSize = 12.sp)
+                } else {
+                    Box(Modifier.fillMaxWidth().height(210.dp), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = Cyan, strokeWidth = 2.dp)
+                    }
+                }
             } else if (mediaBitmap != null) {
                 Image(bitmap = mediaBitmap!!, contentDescription = post.optString("title"), modifier = Modifier.fillMaxWidth().height(180.dp), contentScale = ContentScale.Crop)
             }
-            Text("المشاهدات: ${post.optInt("views")} • التعليقات: ${post.optInt("comments_count")}", color = Muted, fontSize = 11.sp)
-            Text("❤️ ${post.optInt("heart_count")}   👍 ${post.optInt("like_count")}   😡 ${post.optInt("angry_count")}   🥺 ${post.optInt("sad_count")}   👎 ${post.optInt("dislike_count")}", color = Cyan)
-            Text("تفاعلك: ${post.optString("my_reaction", "لم تتفاعل بعد")}", color = Muted, fontSize = 11.sp)
+            Text("المشاهدات: " + post.optInt("views") + " • التعليقات: " + post.optInt("comments_count"), color = Muted, fontSize = 11.sp)
+            Text("❤️ " + post.optInt("heart_count") + "   😡 " + post.optInt("angry_count") + "   🥺 " + post.optInt("sad_count") + "   👍 " + post.optInt("like_count") + "   👎 " + post.optInt("dislike_count"), color = Cyan)
+            Text("تفاعلك: " + post.optString("my_reaction", "لم تتفاعل بعد"), color = Muted, fontSize = 11.sp)
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                listOf("❤️", "😡", "🥺", "👍", "👎").forEach { emoji ->
-                    TextButton(onClick = { onReaction(emoji) }) { Text(emoji) }
+                listOf(
+                    "❤️" to Icons.Filled.Favorite,
+                    "😡" to Icons.Filled.SentimentDissatisfied,
+                    "🥺" to Icons.Filled.Favorite,
+                    "👍" to Icons.Filled.ThumbUp,
+                    "👎" to Icons.Filled.ThumbDown
+                ).forEach { (reaction, vector) ->
+                    TextButton(onClick = { onReaction(reaction) }) {
+                        Icon(vector, contentDescription = reaction, tint = Cyan, modifier = Modifier.size(19.dp))
+                    }
                 }
             }
             TextButton(onClick = onLoadComments) { Text("عرض التعليقات") }
@@ -1170,12 +1211,18 @@ private fun NewsCard(
                 if (comments.length() == 0) Text("لا توجد تعليقات بعد", color = Muted, fontSize = 12.sp)
                 for (i in 0 until comments.length()) {
                     val item = comments.optJSONObject(i) ?: continue
-                    Text("${item.optString("user_id")} : ${item.optString("comment")}", color = Color.White, fontSize = 12.sp)
+                    Text(item.optString("user_id") + " : " + item.optString("comment"), color = Color.White, fontSize = 12.sp)
                 }
             }
             OutlinedField(value = comment, onValueChange = onCommentChange, label = "اكتب تعليقاً")
             Button(onClick = onComment, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF087F9B))) {
                 Text("إرسال التعليق")
+            }
+        }
+    }
+}
+
+t("إرسال التعليق")
             }
         }
     }
