@@ -1047,133 +1047,25 @@ private data class OxideGlassDrop(
 
 @Composable
 private fun OxideRainOverlay() {
-    val transition = rememberInfiniteTransition(label = "oxide-original-rain-clock")
-    val seconds by transition.animateFloat(
-        initialValue = 0f,
-        targetValue = 60f,
-        animationSpec = infiniteRepeatable(animation = tween(60000, easing = LinearEasing)),
-        label = "oxide-original-rain-time"
+    AndroidView(
+        modifier = Modifier.fillMaxSize(),
+        factory = { context ->
+            android.webkit.WebView(context).apply {
+                setBackgroundColor(android.graphics.Color.TRANSPARENT)
+                settings.javaScriptEnabled = true
+                settings.domStorageEnabled = true
+                isVerticalScrollBarEnabled = false
+                isHorizontalScrollBarEnabled = false
+                overScrollMode = android.view.View.OVER_SCROLL_NEVER
+                isClickable = false
+                isFocusable = false
+                loadUrl("file:///android_asset/oxide_rain.html")
+            }
+        },
+        update = { view ->
+            if (view.url == null) view.loadUrl("file:///android_asset/oxide_rain.html")
+        }
     )
-    var viewport by remember { mutableStateOf(IntSize.Zero) }
-    val rainDrops = remember(viewport) {
-        val w = viewport.width.toFloat()
-        val h = viewport.height.toFloat()
-        val count = ((w * h / 3000f).toInt()).coerceIn(100, 440)
-        List(count) {
-            OxideRainDrop(
-                x = kotlin.random.Random.nextFloat() * (w + 40f) - 20f,
-                y = kotlin.random.Random.nextFloat() * (h * 2f) - h,
-                length = 9f + kotlin.random.Random.nextFloat() * 16f,
-                speed = 420f + kotlin.random.Random.nextFloat() * 430f,
-                width = 0.55f + kotlin.random.Random.nextFloat() * 0.8f,
-                alpha = 0.16f + kotlin.random.Random.nextFloat() * 0.32f,
-                drift = -28f + kotlin.random.Random.nextFloat() * 46f
-            )
-        }
-    }
-    val glassDrops = remember(viewport) {
-        val w = viewport.width.toFloat()
-        val h = viewport.height.toFloat()
-        val count = (w / 7f).toInt().coerceIn(24, 85)
-        List(count) {
-            OxideGlassDrop(
-                x = kotlin.random.Random.nextFloat() * w,
-                y = kotlin.random.Random.nextFloat() * h,
-                radius = 1.1f + kotlin.random.Random.nextFloat() * 3.3f,
-                vy = 7f + kotlin.random.Random.nextFloat() * 18f,
-                vx = -2f + kotlin.random.Random.nextFloat() * 4f,
-                trail = 12f + kotlin.random.Random.nextFloat() * 36f,
-                alpha = 0.18f + kotlin.random.Random.nextFloat() * 0.30f,
-                wobble = kotlin.random.Random.nextFloat() * (Math.PI.toFloat() * 2f)
-            )
-        }
-    }
-
-    Canvas(
-        modifier = Modifier.fillMaxSize().onSizeChanged { viewport = it }
-    ) {
-        val w = size.width
-        val h = size.height
-        if (w <= 0f || h <= 0f) return@Canvas
-        val t = seconds
-        val timeMs = t * 1000f
-
-        // Falling rain streaks: randomized count, length, speed, width and diagonal drift.
-        rainDrops.forEach { d ->
-            val y = ((d.y + d.speed * t + h + 35f) % (h + 70f)) - 35f
-            val x = d.x + d.drift * t * 0.035f
-            val endX = x + d.drift * 0.035f
-            val rainBrush = Brush.linearGradient(
-                colors = listOf(
-                    Color(0xFFCCEBFF).copy(alpha = 0f),
-                    Color(0xFFC2E7FF).copy(alpha = d.alpha * 0.48f),
-                    Color(0xFFEBF8FF).copy(alpha = d.alpha)
-                ),
-                start = Offset(x, y - d.length),
-                end = Offset(endX, y)
-            )
-            drawLine(
-                brush = rainBrush,
-                start = Offset(x, y - d.length),
-                end = Offset(endX, y),
-                strokeWidth = d.width,
-                cap = StrokeCap.Round
-            )
-        }
-
-        // Water beads on the glass, with a faint trailing wet line and reflected highlights.
-        glassDrops.forEach { d ->
-            val y = ((d.y + d.vy * t + h + 50f) % (h + 100f)) - 50f
-            val x = d.x + kotlin.math.sin(timeMs * 0.0007f + d.wobble) * d.vx * t
-            val trailBrush = Brush.linearGradient(
-                colors = listOf(
-                    Color(0xFFC3E5FF).copy(alpha = 0f),
-                    Color(0xFFC6E5FF).copy(alpha = d.alpha * 0.23f)
-                ),
-                start = Offset(x, y - d.trail),
-                end = Offset(x, y)
-            )
-            drawLine(
-                brush = trailBrush,
-                start = Offset(x, y - d.trail),
-                end = Offset(x, y),
-                strokeWidth = (d.radius * 0.55f).coerceAtLeast(0.7f),
-                cap = StrokeCap.Round
-            )
-
-            drawOval(
-                brush = Brush.radialGradient(
-                    colors = listOf(
-                        Color.White.copy(alpha = d.alpha * 0.9f),
-                        Color(0xFFCEEBFF).copy(alpha = d.alpha * 0.42f),
-                        Color(0xFF60A4DC).copy(alpha = d.alpha * 0.19f),
-                        Color(0xFFE1F5FF).copy(alpha = 0f)
-                    ),
-                    center = Offset(x - d.radius * 0.36f, y - d.radius * 0.42f),
-                    radius = d.radius * 1.35f
-                ),
-                topLeft = Offset(x - d.radius * 0.78f, y - d.radius * 1.18f),
-                size = androidx.compose.ui.geometry.Size(d.radius * 1.56f, d.radius * 2.36f)
-            )
-            drawArc(
-                color = Color(0xFFE7F7FF).copy(alpha = d.alpha * 0.65f),
-                startAngle = 195f,
-                sweepAngle = 105f,
-                useCenter = false,
-                topLeft = Offset(x - d.radius * 0.60f, y - d.radius * 0.90f),
-                size = androidx.compose.ui.geometry.Size(d.radius * 0.96f, d.radius * 1.56f),
-                style = Stroke(width = 0.65f)
-            )
-            drawOval(
-                color = Color.White.copy(alpha = d.alpha * 0.8f),
-                topLeft = Offset(x - d.radius * 0.40f, y - d.radius * 0.67f),
-                size = androidx.compose.ui.geometry.Size(
-                    (d.radius * 0.30f).coerceAtLeast(0.9f),
-                    (d.radius * 0.50f).coerceAtLeast(1.4f)
-                )
-            )
-        }
-    }
 }
 
 @Composable
