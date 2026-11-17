@@ -98,6 +98,10 @@ private fun OxideNativeApp(api: OxideApi) {
     var uuidDraft by remember { mutableStateOf("") }
     var linkCode by remember { mutableStateOf("") }
     var commentDraft by remember { mutableStateOf("") }
+    var referralDraft by remember { mutableStateOf("") }
+    var orderData by remember { mutableStateOf<JSONObject?>(null) }
+    var commentsData by remember { mutableStateOf<JSONObject?>(null) }
+    var commentsPostId by remember { mutableStateOf(0) }
     var selectedMissionId by remember { mutableStateOf(0) }
     var proofUploading by remember { mutableStateOf(false) }
 
@@ -158,6 +162,7 @@ private fun OxideNativeApp(api: OxideApi) {
             actionMessage = null
             try {
                 remoteData = api.get(endpoint)
+                if (selected == 2) orderData = api.get("/api/reward-orders")
                 if (remoteData?.optBoolean("success", true) == false) {
                     sectionError = remoteData?.optString("error", "تعذر تحميل البيانات")
                 }
@@ -325,7 +330,7 @@ private fun OxideNativeApp(api: OxideApi) {
                     if (offers == null || offers.length() == 0) {
                         if (!sectionLoading) FeatureCard("لا توجد عروض", "تعذر تحميل عروض الاستبدال.")
                     } else {
-                        OutlinedField(value = uuidDraft, onValueChange = { uuidDraft = it }, label = "أدخل UUID حساب اللعبة")
+                        OutlinedField(value = uuidDraft, onValueChange = { uuidDraft = it }, label = "معرّف حسابك OX-XXXXXXXX أو UUID")
                         for (i in 0 until offers.length()) {
                             val offer = offers.optJSONObject(i) ?: continue
                             val offerId = offer.optInt("id")
@@ -345,7 +350,24 @@ private fun OxideNativeApp(api: OxideApi) {
                             }
                         }
                     }
-                    FeatureCard("تنبيه", "يتم خصم النقاط وإرسال الطلب إلى الإدارة فقط عند نجاح الخادم في إنشاء الطلب.")
+                    Text("طلبات الاستبدال السابقة", color = Cyan, fontWeight = FontWeight.Bold)
+                    val orders = orderData?.optJSONArray("orders")
+                    if (orders == null || orders.length() == 0) {
+                        FeatureCard("لا توجد طلبات سابقة", "ستظهر طلباتك هنا بعد تقديم أول طلب استبدال.")
+                    } else {
+                        for (i in 0 until orders.length()) {
+                            val order = orders.optJSONObject(i) ?: continue
+                            val status = when (order.optString("status")) {
+                                "pending" -> "قيد المراجعة"
+                                "approved" -> "تمت الموافقة"
+                                "rejected" -> "مرفوض"
+                                "failed" -> "فشل الطلب"
+                                else -> order.optString("status")
+                            }
+                            FeatureCard("#${order.optInt("id")} • ${order.optString("offer_name")}", "${order.optInt("points_cost")} نقطة — $status")
+                        }
+                    }
+                    FeatureCard("تنبيه", "يتم خصم النقاط من رصيدك عند إنشاء الطلب، ويعاد الرصيد تلقائياً إذا فشل إرساله للإدارة.")
                 }
                 3 -> {
                     Text("الإحالات والترتيب", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
@@ -355,6 +377,17 @@ private fun OxideNativeApp(api: OxideApi) {
                             Text("رمز الإحالة: ${remoteData?.optString("referralCode", "—") ?: "—"}", color = Cyan, fontWeight = FontWeight.Bold)
                             Text("الأصدقاء المدعوون: ${user?.optInt("referrals", 0) ?: 0}", color = Color.White)
                             Text("النقاط المكتسبة من الإحالات: ${user?.optInt("earned", 0) ?: 0}", color = Muted)
+                        }
+                    }
+                    Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(18.dp)) {
+                        Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text("إضافة إحالة", color = Cyan, fontWeight = FontWeight.Bold)
+                            Text("أدخل رمز الشخص الذي دعاك. لا يمكن إضافة إحالة بعد تسجيلها مرة واحدة.", color = Muted, fontSize = 12.sp)
+                            OutlinedField(value = referralDraft, onValueChange = { referralDraft = it }, label = "رمز الإحالة OX-XXXXXXXX")
+                            Button(onClick = {
+                                if (referralDraft.isBlank()) sectionError = "أدخل رمز الإحالة أولاً"
+                                else sendPost("/api/referral", JSONObject().put("referrerId", referralDraft.trim()), "تم تسجيل الإحالة بنجاح")
+                            }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF087F9B))) { Text("تأكيد رمز الإحالة") }
                         }
                     }
                     RankingList("أفضل أصحاب النقاط", remoteData?.optJSONArray("pointsRanking"), "points", "نقطة")
@@ -371,6 +404,17 @@ private fun OxideNativeApp(api: OxideApi) {
                             NewsCard(
                                 post = post,
                                 comment = commentDraft,
+                                comments = if (commentsPostId == post.optInt("id")) commentsData?.optJSONArray("comments") else null,
+                                onLoadComments = {
+                                    scope.launch {
+                                        try {
+                                            commentsData = api.get("/api/news?postId=${post.optInt("id")}")
+                                            commentsPostId = post.optInt("id")
+                                        } catch (e: Exception) {
+                                            sectionError = e.localizedMessage ?: "تعذر تحميل التعليقات"
+                                        }
+                                    }
+                                },
                                 onCommentChange = { commentDraft = it },
                                 onReaction = { reaction ->
                                     sendPost("/api/news", JSONObject().put("action", "reaction").put("postId", post.optInt("id")).put("reaction", reaction), "تم تسجيل تفاعلك")
@@ -461,6 +505,8 @@ private fun MissionCard(item: JSONObject, onOpen: (String) -> Unit, onPickProof:
 private fun NewsCard(
     post: JSONObject,
     comment: String,
+    comments: JSONArray?,
+    onLoadComments: () -> Unit,
     onCommentChange: (String) -> Unit,
     onReaction: (String) -> Unit,
     onComment: () -> Unit
@@ -469,10 +515,19 @@ private fun NewsCard(
         Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(post.optString("title"), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
             Text("المشاهدات: ${post.optInt("views")} • التعليقات: ${post.optInt("comments_count")}", color = Muted, fontSize = 11.sp)
-            Text("❤️ ${post.optInt("heart_count")}   👍 ${post.optInt("like_count")}   😡 ${post.optInt("angry_count")}", color = Cyan)
+            Text("❤️ ${post.optInt("heart_count")}   👍 ${post.optInt("like_count")}   😡 ${post.optInt("angry_count")}   🥺 ${post.optInt("sad_count")}   👎 ${post.optInt("dislike_count")}", color = Cyan)
+            Text("تفاعلك: ${post.optString("my_reaction", "لم تتفاعل بعد")}", color = Muted, fontSize = 11.sp)
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 listOf("❤️", "😡", "🥺", "👍", "👎").forEach { emoji ->
                     TextButton(onClick = { onReaction(emoji) }) { Text(emoji) }
+                }
+            }
+            TextButton(onClick = onLoadComments) { Text("عرض التعليقات") }
+            if (comments != null) {
+                if (comments.length() == 0) Text("لا توجد تعليقات بعد", color = Muted, fontSize = 12.sp)
+                for (i in 0 until comments.length()) {
+                    val item = comments.optJSONObject(i) ?: continue
+                    Text("${item.optString("user_id")} : ${item.optString("comment")}", color = Color.White, fontSize = 12.sp)
                 }
             }
             OutlinedField(value = comment, onValueChange = onCommentChange, label = "اكتب تعليقاً")
