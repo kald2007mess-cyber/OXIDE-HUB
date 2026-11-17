@@ -121,6 +121,8 @@ private fun OxideNativeApp(api: OxideApi) {
     var commentDraft by remember { mutableStateOf("") }
     var referralDraft by remember { mutableStateOf("") }
     var orderData by remember { mutableStateOf<JSONObject?>(null) }
+    var islandData by remember { mutableStateOf<JSONObject?>(null) }
+    var islandTab by remember { mutableStateOf(0) }
     var commentsData by remember { mutableStateOf<JSONObject?>(null) }
     var commentsPostId by remember { mutableStateOf(0) }
     var selectedMissionId by remember { mutableStateOf(0) }
@@ -195,6 +197,7 @@ private fun OxideNativeApp(api: OxideApi) {
                 remoteData = api.get(endpoint)
                 if (selected == 1) {
                     orderData = api.get("/api/reward-orders")
+                    islandData = api.get("/api/reward-ptc")
                     val missionData = api.get("/api/missions/status")
                     remoteData?.put("nativeMissions", missionData.optJSONArray("missions") ?: JSONArray())
                     remoteData?.put("completedMissions", missionData.optInt("completedMissions", 0))
@@ -398,38 +401,72 @@ private fun OxideNativeApp(api: OxideApi) {
                     }
                 }
                 1 -> {
-                    Text("المكافآت", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-                    Text("رصيدك: ${remoteData?.optInt("points", 0) ?: profile?.optInt("points", 0) ?: 0} نقطة", color = Cyan, fontWeight = FontWeight.Bold)
-                    val offers = remoteData?.optJSONArray("offers")
-                    if (offers == null || offers.length() == 0) {
-                        if (!sectionLoading) FeatureCard("لا توجد عروض", "تعذر تحميل عروض الاستبدال.")
-                    } else {
-                        OutlinedField(value = uuidDraft, onValueChange = { uuidDraft = it }, label = "معرّف حسابك OX-XXXXXXXX أو UUID")
-                        for (i in 0 until offers.length()) {
-                            val offer = offers.optJSONObject(i) ?: continue
-                            val offerId = offer.optInt("id")
-                            val cost = offer.optInt("points")
-                            Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(18.dp)) {
-                                Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    Text(offer.optString("name"), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 17.sp)
-                                    Text("$cost نقطة", color = Cyan)
-                                    Button(
-                                        onClick = {
-                                            if (uuidDraft.isBlank()) sectionError = "أدخل UUID أولاً"
-                                            else sendPost("/api/rewards", JSONObject().put("offerId", offerId).put("userUuid", uuidDraft.trim()), "تم إرسال طلب الاستبدال للمراجعة")
-                                        },
-                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF087F9B))
-                                    ) { Text("طلب الاستبدال") }
+                    Text("🎁 OXIDE ISLAND", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                    Card(colors = CardDefaults.cardColors(containerColor = Color(0xE6084170)), shape = RoundedCornerShape(15.dp)) {
+                        Column(Modifier.fillMaxWidth().padding(18.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Text("رصيد النقاط", color = Muted, fontSize = 13.sp)
+                            Text((remoteData?.optInt("points", 0) ?: profile?.optInt("points", 0) ?: 0).toString(), color = Cyan, fontSize = 34.sp, fontWeight = FontWeight.ExtraBold)
+                            Text("نقاطك المتاحة في OXIDE HUB", color = Muted, fontSize = 11.sp)
+                        }
+                    }
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(9.dp)) {
+                        listOf("🎁 اجمع واستبدل", "📋 المهمات والعروض").forEachIndexed { index, label ->
+                            Surface(
+                                modifier = Modifier.weight(1f).height(82.dp).clickable { islandTab = index },
+                                color = if (islandTab == index) Color(0xFF075A9D) else Color(0xF00F2643),
+                                shape = RoundedCornerShape(11.dp),
+                                border = androidx.compose.foundation.BorderStroke(1.dp, if (islandTab == index) Color(0xFF00AAFF) else Color(0xFF176CAA))
+                            ) {
+                                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                    Text(label, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
                     }
-                    Text("طلبات الاستبدال السابقة", color = Cyan, fontWeight = FontWeight.Bold)
-                    val orders = orderData?.optJSONArray("orders")
-                    if (orders == null || orders.length() == 0) {
-                        FeatureCard("لا توجد طلبات سابقة", "ستظهر طلباتك هنا بعد تقديم أول طلب استبدال.")
-                    } else {
-                        for (i in 0 until orders.length()) {
+                    if (islandTab == 0) {
+                        Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(16.dp)) {
+                            Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                Text("تقدم إعلانات الجزيرة", color = Cyan, fontWeight = FontWeight.Bold)
+                                val completedAds = islandData?.optInt("completedAds", 0) ?: 0
+                                val requiredAds = islandData?.optInt("requiredAds", 10) ?: 10
+                                Text("$completedAds / $requiredAds", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                                androidx.compose.material3.LinearProgressIndicator(
+                                    progress = { if (requiredAds > 0) (completedAds.toFloat() / requiredAds).coerceIn(0f, 1f) else 0f },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    color = Cyan,
+                                    trackColor = Color(0xFF244765)
+                                )
+                                Text("المكافأة: ${islandData?.optInt("pointsPerAd", 5) ?: 5} نقاط لكل إعلان", color = Muted, fontSize = 12.sp)
+                                Button(onClick = { actionMessage = "🔒 SOON — مشاهدة الإعلانات غير متاحة حاليًا." }, enabled = false, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(disabledContainerColor = Color(0xFF244765))) { Text("🔒 مشاهدة الإعلانات — SOON") }
+                                Text("مشاهدة الإعلانات غير متاحة حاليًا، كما في الموقع الأصلي.", color = Muted, fontSize = 11.sp)
+                            }
+                        }
+                        Text("المكافآت المتاحة", color = Cyan, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                        val offers = remoteData?.optJSONArray("offers")
+                        if (offers == null || offers.length() == 0) {
+                            if (!sectionLoading) FeatureCard("لا توجد عروض", "تعذر تحميل عروض الاستبدال.")
+                        } else {
+                            for (i in 0 until offers.length()) {
+                                val offer = offers.optJSONObject(i) ?: continue
+                                val offerId = offer.optInt("id")
+                                val cost = offer.optInt("points")
+                                Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(18.dp)) {
+                                    Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        Text(offer.optString("name"), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 17.sp)
+                                        Text("$cost نقطة", color = Cyan)
+                                        Button(onClick = {
+                                            if (uuidDraft.isBlank()) sectionError = "أدخل UUID أولاً"
+                                            else sendPost("/api/rewards", JSONObject().put("offerId", offerId).put("userUuid", uuidDraft.trim()), "تم إرسال طلب الاستبدال للمراجعة")
+                                        }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF087F9B))) { Text("طلب الاستبدال") }
+                                    }
+                                }
+                            }
+                            OutlinedField(value = uuidDraft, onValueChange = { uuidDraft = it }, label = "معرّف حسابك OX-XXXXXXXX أو UUID")
+                        }
+                        Text("طلبات الاستبدال السابقة", color = Cyan, fontWeight = FontWeight.Bold)
+                        val orders = orderData?.optJSONArray("orders")
+                        if (orders == null || orders.length() == 0) FeatureCard("لا توجد طلبات سابقة", "ستظهر طلباتك هنا بعد تقديم أول طلب استبدال.")
+                        else for (i in 0 until orders.length()) {
                             val order = orders.optJSONObject(i) ?: continue
                             val status = when (order.optString("status")) {
                                 "pending" -> "قيد المراجعة"
@@ -440,16 +477,12 @@ private fun OxideNativeApp(api: OxideApi) {
                             }
                             FeatureCard("#${order.optInt("id")} • ${order.optString("offer_name")}", "${order.optInt("points_cost")} نقطة — $status")
                         }
-                    }
-                    FeatureCard("تنبيه", "يتم خصم النقاط من رصيدك عند إنشاء الطلب، ويعاد الرصيد تلقائياً إذا فشل إرساله للإدارة.")
-                    Spacer(Modifier.height(10.dp))
-                    Text("المهمات والعروض", color = Cyan, fontSize = 19.sp, fontWeight = FontWeight.Bold)
-                    Text("المهام المكتملة: ${remoteData?.optInt("completedMissions", 0) ?: 0}", color = Green)
-                    val missions = remoteData?.optJSONArray("nativeMissions")
-                    if (missions == null || missions.length() == 0) {
-                        FeatureCard("لا توجد مهمات متاحة", "ستظهر المهمات هنا عند توفرها.")
                     } else {
-                        for (i in 0 until missions.length()) {
+                        Text("المهمات والعروض", color = Cyan, fontSize = 19.sp, fontWeight = FontWeight.Bold)
+                        Text("المهام المكتملة: ${remoteData?.optInt("completedMissions", 0) ?: 0}", color = Green)
+                        val missions = remoteData?.optJSONArray("nativeMissions")
+                        if (missions == null || missions.length() == 0) FeatureCard("لا توجد مهمات متاحة", "ستظهر المهمات هنا عند توفرها.")
+                        else for (i in 0 until missions.length()) {
                             val item = missions.optJSONObject(i) ?: continue
                             MissionCard(item = item, onOpen = { url ->
                                 try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) } catch (_: Exception) {}
@@ -458,8 +491,8 @@ private fun OxideNativeApp(api: OxideApi) {
                                 proofPicker.launch("image/*")
                             })
                         }
+                        if (proofUploading) CircularProgressIndicator(modifier = Modifier.size(22.dp), color = Cyan, strokeWidth = 2.dp)
                     }
-                    if (proofUploading) CircularProgressIndicator(modifier = Modifier.size(22.dp), color = Cyan, strokeWidth = 2.dp)
                 }
                 2 -> {
                     Text("👑 OXIDE VIP", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
