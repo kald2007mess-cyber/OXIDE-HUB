@@ -46,6 +46,8 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -122,6 +124,8 @@ private fun OxideNativeApp(api: OxideApi) {
     var referralDraft by remember { mutableStateOf("") }
     var orderData by remember { mutableStateOf<JSONObject?>(null) }
     var islandData by remember { mutableStateOf<JSONObject?>(null) }
+    var settingsExpanded by remember { mutableStateOf(false) }
+    var currentLanguage by remember { mutableStateOf("ar") }
     var islandTab by remember { mutableStateOf(0) }
     var commentsData by remember { mutableStateOf<JSONObject?>(null) }
     var commentsPostId by remember { mutableStateOf(0) }
@@ -195,6 +199,9 @@ private fun OxideNativeApp(api: OxideApi) {
             actionMessage = null
             try {
                 remoteData = api.get(endpoint)
+                if (selected == 3) {
+                    currentLanguage = try { api.get("/api/preferences").optString("language", "ar") } catch (_: Exception) { "ar" }
+                }
                 if (selected == 1) {
                     orderData = api.get("/api/reward-orders")
                     islandData = api.get("/api/reward-ptc")
@@ -289,10 +296,39 @@ private fun OxideNativeApp(api: OxideApi) {
                     .padding(horizontal = 18.dp, vertical = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                TextButton(onClick = { selected = 5 }) { Text("◉", color = Cyan, fontSize = 16.sp) }
-                TextButton(onClick = { selected = 6 }) { Text("🔔", color = Cyan, fontSize = 16.sp) }
-                TextButton(onClick = { selected = 5 }) { Text("🎧", color = Cyan, fontSize = 16.sp) }
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                TextButton(onClick = { selected = 6 }) { Text("🔔", color = Cyan, fontSize = 17.sp) }
+                Box {
+                    TextButton(onClick = { settingsExpanded = true }) { Text("⚙️", color = Cyan, fontSize = 17.sp) }
+                    DropdownMenu(expanded = settingsExpanded, onDismissRequest = { settingsExpanded = false }) {
+                        DropdownMenuItem(text = { Text("العربية") }, onClick = {
+                            settingsExpanded = false
+                            currentLanguage = "ar"
+                            sendPost("/api/preferences", JSONObject().put("language", "ar"), "تم حفظ اللغة")
+                        })
+                        DropdownMenuItem(text = { Text("English") }, onClick = {
+                            settingsExpanded = false
+                            currentLanguage = "en"
+                            sendPost("/api/preferences", JSONObject().put("language", "en"), "Language saved")
+                        })
+                        DropdownMenuItem(text = { Text("Français") }, onClick = {
+                            settingsExpanded = false
+                            currentLanguage = "fr"
+                            sendPost("/api/preferences", JSONObject().put("language", "fr"), "Langue enregistrée")
+                        })
+                        DropdownMenuItem(text = { Text("Español") }, onClick = {
+                            settingsExpanded = false
+                            currentLanguage = "es"
+                            sendPost("/api/preferences", JSONObject().put("language", "es"), "Idioma guardado")
+                        })
+                        DropdownMenuItem(text = { Text("Deutsch") }, onClick = {
+                            settingsExpanded = false
+                            currentLanguage = "de"
+                            sendPost("/api/preferences", JSONObject().put("language", "de"), "Sprache gespeichert")
+                        })
+                    }
+                }
+                TextButton(onClick = { selected = 5 }) { Text("🎧", color = Cyan, fontSize = 17.sp) }
                 Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
                     Text("OXIDE HUB", color = Color.White, fontSize = 21.sp, fontWeight = FontWeight.Black)
                     Text("SURVIVE • EXPLORE • DOMINATE", color = Cyan, fontSize = 8.sp, letterSpacing = 1.sp)
@@ -503,7 +539,31 @@ private fun OxideNativeApp(api: OxideApi) {
                     val user = remoteData?.optJSONObject("user")
                     Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(18.dp)) {
                         Column(Modifier.fillMaxWidth().padding(17.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text("رمز الإحالة: ${remoteData?.optString("referralCode", "—") ?: "—"}", color = Cyan, fontWeight = FontWeight.Bold)
+                            Text("ادعُ أصدقاءك واربح", color = Cyan, fontWeight = FontWeight.Bold, fontSize = 17.sp)
+                            Text("صديقك يحصل على 30 نقطة وأنت تحصل على 50 نقطة عند إدخال رمز دعوتك.", color = Muted, fontSize = 12.sp)
+                            val code = remoteData?.optString("referralCode", "") ?: ""
+                            val inviteLink = if (code.isNotBlank()) OxideApi.BASE_URL + "/?ref=" + code else ""
+                            Text("رابط دعوتك", color = Muted, fontSize = 11.sp)
+                            Text(if (inviteLink.isBlank()) "جارٍ تحميل الرابط..." else inviteLink, color = Color.White, fontSize = 11.sp)
+                            Row(horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+                                Button(onClick = {
+                                    if (inviteLink.isNotBlank()) {
+                                        val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                                        clipboard.setPrimaryClip(android.content.ClipData.newPlainText("OXIDE referral", inviteLink))
+                                        actionMessage = "تم نسخ رابط الدعوة"
+                                    }
+                                }, enabled = inviteLink.isNotBlank(), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF087F9B))) { Text("📋 نسخ الرابط") }
+                                Button(onClick = {
+                                    if (inviteLink.isNotBlank()) {
+                                        val share = Intent(Intent.ACTION_SEND).apply {
+                                            type = "text/plain"
+                                            putExtra(Intent.EXTRA_SUBJECT, "OXIDE HUB")
+                                            putExtra(Intent.EXTRA_TEXT, "انضم إلى OXIDE HUB عبر رابط الدعوة الخاص بي واربح! $inviteLink")
+                                        }
+                                        try { context.startActivity(Intent.createChooser(share, "مشاركة رابط الدعوة")) } catch (_: Exception) { sectionError = "تعذرت مشاركة الرابط" }
+                                    }
+                                }, enabled = inviteLink.isNotBlank(), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF15506B))) { Text("↗ مشاركة") }
+                            }
                             Text("الأصدقاء المدعوون: ${user?.optInt("referrals", 0) ?: 0}", color = Color.White)
                             Text("النقاط المكتسبة من الإحالات: ${user?.optInt("earned", 0) ?: 0}", color = Muted)
                         }
