@@ -545,6 +545,7 @@ private fun OxideNativeApp(api: OxideApi) {
 
             if (maintenanceActive && selected in listOf(0, 1, 3)) {
                 FeatureCard(
+                "الموقع تحت الصيانة", maintenanceMessage)
             } else when (selected) {
                 0 -> {
                     val progress = (progressData?.optInt("progress", 0) ?: 0).coerceIn(0, 3)
@@ -658,6 +659,7 @@ private fun OxideNativeApp(api: OxideApi) {
                         val offers = remoteData?.optJSONArray("offers")
                         if (offers == null || offers.length() == 0) {
                             if (!sectionLoading) FeatureCard(
+                "لا توجد عروض", "تعذر تحميل عروض الاستبدال.")
                         } else {
                             for (rowStart in 0 until offers.length() step 2) {
                                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.Top) {
@@ -726,6 +728,7 @@ private fun OxideNativeApp(api: OxideApi) {
                         Text("طلبات الاستبدال السابقة", color = Cyan, fontWeight = FontWeight.Bold)
                         val orders = orderData?.optJSONArray("orders")
                         if (orders == null || orders.length() == 0) FeatureCard(
+                "لا توجد طلبات سابقة", "ستظهر طلباتك هنا بعد تقديم أول طلب استبدال.")
                         else for (i in 0 until orders.length()) {
                             val order = orders.optJSONObject(i) ?: continue
                             val status = when (order.optString("status")) {
@@ -736,6 +739,7 @@ private fun OxideNativeApp(api: OxideApi) {
                                 else -> order.optString("status")
                             }
                             FeatureCard(
+                "#${order.optInt("id")} • ${order.optString("offer_name")}", "${order.optInt("points_cost")} نقطة — $status")
                         }
                     } else {
                         Text("المهمات والعروض", color = Cyan, fontSize = 19.sp, fontWeight = FontWeight.Bold)
@@ -766,9 +770,11 @@ private fun OxideNativeApp(api: OxideApi) {
                         }
                         Text("المهمات المتاحة", color = Cyan, fontWeight = FontWeight.Bold)
                         if (missions == null || missions.length() == 0) FeatureCard(
+                "لا توجد مهمات متاحة", "ستظهر المهمات هنا عند توفرها.")
                         else for (i in 0 until missions.length()) {
                             val item = missions.optJSONObject(i) ?: continue
                             MissionCard(
+                item = item, onOpen = { url ->
                                 try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) } catch (_: Exception) {}
                             }, onPickProof = {
                                 selectedMissionId = item.optInt("id")
@@ -781,6 +787,7 @@ private fun OxideNativeApp(api: OxideApi) {
                 2 -> {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) { Icon(Icons.Filled.Star, contentDescription = null, tint = Cyan, modifier = Modifier.size(24.dp)); Text("OXIDE VIP", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold) }
                     FeatureCard(
+                "SOON", "اشتراك VIP سيكون متاحًا قريبًا.")
                 }
                 3 -> {
                     Text("الإحالات والترتيب", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
@@ -837,10 +844,12 @@ private fun OxideNativeApp(api: OxideApi) {
                     val posts = remoteData?.optJSONArray("posts")
                     if (posts == null || posts.length() == 0) {
                         if (!sectionLoading) FeatureCard(
+                "لا توجد أخبار", "ستظهر منشورات الإدارة هنا عند توفرها.")
                     } else {
                         for (i in 0 until posts.length()) {
                             val post = posts.optJSONObject(i) ?: continue
                             NewsCard(
+                
                                 post = post,
                                 comment = commentDraft,
                                 comments = if (commentsPostId == post.optInt("id")) commentsData?.optJSONArray("comments") else null,
@@ -879,6 +888,7 @@ private fun OxideNativeApp(api: OxideApi) {
                     }
                     if (notifications == null || notifications.length() == 0) {
                         FeatureCard(
+                "لا توجد إشعارات", "ستظهر هنا تنبيهات حسابك ومكافآتك الجديدة.")
                     } else {
                         for (i in 0 until notifications.length()) {
                             val item = notifications.optJSONObject(i) ?: continue
@@ -908,6 +918,7 @@ private fun OxideNativeApp(api: OxideApi) {
                     val messages = remoteData?.optJSONArray("messages")
                     if (messages == null || messages.length() == 0) {
                         FeatureCard(
+                "المحادثة", "لا توجد رسائل سابقة. يمكنك إرسال رسالة للدعم أدناه.")
                     } else {
                         for (i in 0 until messages.length()) {
                             val item = messages.optJSONObject(i) ?: continue
@@ -943,6 +954,7 @@ private fun OxideNativeApp(api: OxideApi) {
             if (sectionLoading && selected != 0) CircularProgressIndicator(modifier = Modifier.size(22.dp), color = Cyan, strokeWidth = 2.dp)
             actionMessage?.let { Text(it, color = Green, fontWeight = FontWeight.Bold) }
             sectionError?.let { FeatureCard(
+                oxideText("تنبيه", language), it) }
             Spacer(Modifier.height(4.dp))
             Text("OXIDE HUB • Android Native", color = Muted, fontSize = 10.sp)
             }
