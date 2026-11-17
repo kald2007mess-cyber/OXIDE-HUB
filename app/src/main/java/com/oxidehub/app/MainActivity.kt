@@ -127,7 +127,6 @@ private fun OxideNativeApp(api: OxideApi) {
     var islandData by remember { mutableStateOf<JSONObject?>(null) }
     var progressData by remember { mutableStateOf<JSONObject?>(null) }
     var settingsExpanded by remember { mutableStateOf(false) }
-    var currentLanguage by remember { mutableStateOf("ar") }
     var islandTab by remember { mutableStateOf(0) }
     var commentsData by remember { mutableStateOf<JSONObject?>(null) }
     var commentsPostId by remember { mutableStateOf(0) }
@@ -207,9 +206,6 @@ private fun OxideNativeApp(api: OxideApi) {
             actionMessage = null
             try {
                 remoteData = api.get(endpoint)
-                if (selected == 3) {
-                    currentLanguage = try { api.get("/api/preferences").optString("language", "ar") } catch (_: Exception) { "ar" }
-                }
                 if (selected == 1) {
                     orderData = api.get("/api/reward-orders")
                     islandData = api.get("/api/reward-ptc")
@@ -318,30 +314,9 @@ private fun OxideNativeApp(api: OxideApi) {
                 Box {
                     TextButton(onClick = { settingsExpanded = true }) { Text("⚙️", color = Cyan, fontSize = 17.sp) }
                     DropdownMenu(expanded = settingsExpanded, onDismissRequest = { settingsExpanded = false }) {
-                        DropdownMenuItem(text = { Text("العربية") }, onClick = {
+                        DropdownMenuItem(text = { Text("ربط حساب Google Play") }, onClick = {
                             settingsExpanded = false
-                            currentLanguage = "ar"
-                            sendPost("/api/preferences", JSONObject().put("language", "ar"), "تم حفظ اللغة")
-                        })
-                        DropdownMenuItem(text = { Text("English") }, onClick = {
-                            settingsExpanded = false
-                            currentLanguage = "en"
-                            sendPost("/api/preferences", JSONObject().put("language", "en"), "Language saved")
-                        })
-                        DropdownMenuItem(text = { Text("Français") }, onClick = {
-                            settingsExpanded = false
-                            currentLanguage = "fr"
-                            sendPost("/api/preferences", JSONObject().put("language", "fr"), "Langue enregistrée")
-                        })
-                        DropdownMenuItem(text = { Text("Español") }, onClick = {
-                            settingsExpanded = false
-                            currentLanguage = "es"
-                            sendPost("/api/preferences", JSONObject().put("language", "es"), "Idioma guardado")
-                        })
-                        DropdownMenuItem(text = { Text("Deutsch") }, onClick = {
-                            settingsExpanded = false
-                            currentLanguage = "de"
-                            sendPost("/api/preferences", JSONObject().put("language", "de"), "Sprache gespeichert")
+                            actionMessage = "ربط Google Play Games سيتاح بعد دمج الخدمة في تطبيق Android."
                         })
                     }
                 }
