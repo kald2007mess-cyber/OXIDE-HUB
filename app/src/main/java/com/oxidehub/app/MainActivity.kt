@@ -592,6 +592,20 @@ private fun OxideRainOverlay() {
         val h = size.height
         val t = seconds
 
+        // Subtle star layer from the website's independently animated .stars background.
+        val starCount = (w * h / 18000f).toInt().coerceIn(35, 120)
+        for (i in 0 until starCount) {
+            val x = (i * 83.17f + 19f) % w
+            val y = (i * 137.31f + t * 0.55f) % h
+            val radius = 0.45f + (i % 4) * 0.22f
+            val alpha = 0.10f + (i % 5) * 0.025f
+            drawCircle(
+                color = Color(0xFFB9DFFF).copy(alpha = alpha),
+                radius = radius,
+                center = Offset(x, y)
+            )
+        }
+
         // Fine rain streaks falling diagonally, matching the website's speed and density.
         val rainCount = (w * h / 3000f).toInt().coerceIn(100, 440)
         for (i in 0 until rainCount) {
